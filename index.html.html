@@ -1,0 +1,1176 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FitMe — Probador Virtual</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --ink:#0A0A0C;--ink2:#161618;--ink3:#242428;
+  --gold:#C9A84C;--goldL:#F5EDD6;--goldD:#96772A;
+  --ash:#F2F1EE;--ashD:#E8E6E1;--ashDD:#D4D1C9;
+  --mist:#7A7870;--fog:#A8A59E;
+  --white:#FFFFFF;
+  --rose:#C0524A;--roseL:#F5E8E7;
+  --sage:#4A7060;--sageL:#E4EDE8;
+  --grad:linear-gradient(135deg,#C9A84C,#96772A);
+  --shadow:0 1px 3px rgba(12,12,14,.06),0 4px 16px rgba(12,12,14,.08);
+  --shadow-lg:0 8px 32px rgba(12,12,14,.14);
+  --r:4px;--r2:8px;--r3:14px;
+  --serif:'Cormorant Garamond',Georgia,serif;
+  --sans:'DM Sans',system-ui,sans-serif;
+}
+*{-webkit-font-smoothing:antialiased;}
+body{font-family:var(--sans);background:var(--ash);color:var(--ink);min-height:100vh;padding-bottom:72px;font-weight:400;}
+
+/* ── HEADER ── */
+.hdr{background:var(--ink);padding:0 18px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;}
+.hdr::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:rgba(255,255,255,.07);}
+.logo{font-family:var(--serif);font-size:26px;font-weight:300;color:var(--white);letter-spacing:2px;font-style:italic;}
+.logo-dot{width:5px;height:5px;background:var(--gold);border-radius:50%;display:inline-block;margin-left:2px;vertical-align:middle;margin-bottom:3px;}
+.ub{background:transparent;border:1px solid rgba(201,168,76,.35);border-radius:2px;padding:5px 14px;font-size:11px;color:rgba(255,255,255,.55);cursor:pointer;letter-spacing:.8px;text-transform:uppercase;font-family:var(--sans);transition:all .25s;}
+.ub.on{background:var(--gold);color:var(--ink);border-color:var(--gold);font-weight:500;}
+.ub:hover{border-color:var(--gold);color:var(--gold);}
+
+/* ── NAV ── */
+.bnav{position:fixed;bottom:0;left:0;right:0;background:var(--ink);display:flex;z-index:200;border-top:1px solid rgba(255,255,255,.06);}
+.nt{flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 4px 13px;cursor:pointer;gap:5px;border:none;background:none;font-family:var(--sans);transition:all .2s;}
+.nt svg{opacity:.35;transition:all .25s;}
+.nt span{font-size:9px;color:rgba(255,255,255,.5);letter-spacing:.6px;text-transform:uppercase;font-weight:500;transition:all .25s;}
+.nt.on svg{opacity:1;}
+.nt.on span{color:var(--gold);}
+.nt.on svg path,.nt.on svg circle,.nt.on svg rect,.nt.on svg line,.nt.on svg polyline{stroke:var(--gold)!important;}
+
+/* ── PAGES ── */
+.pg{display:none;max-width:540px;margin:0 auto;padding:20px 16px;}
+.pg.act{display:block;animation:fadeUp .3s ease both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── CARDS ── */
+.card{background:var(--white);border:1px solid var(--ashDD);border-radius:var(--r3);padding:20px;margin-bottom:12px;box-shadow:var(--shadow);}
+.ct{font-family:var(--serif);font-size:20px;font-weight:400;margin-bottom:4px;letter-spacing:.3px;color:var(--ink);}
+.cs{font-size:12.5px;color:var(--mist);margin-bottom:16px;line-height:1.7;font-weight:300;}
+
+/* ── HERO ── */
+.hero{background:var(--ink2);border-radius:var(--r3);padding:32px 22px;margin-bottom:14px;text-align:center;position:relative;overflow:hidden;}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 0%,rgba(201,168,76,.12) 0%,transparent 60%);pointer-events:none;}
+.hero::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(201,168,76,.3),transparent);}
+.hi{margin-bottom:12px;position:relative;z-index:1;}
+.ht{font-family:var(--serif);font-size:28px;font-weight:300;color:var(--white);margin-bottom:8px;position:relative;z-index:1;letter-spacing:1.5px;font-style:italic;}
+.hs{font-size:12.5px;color:rgba(255,255,255,.7);line-height:1.8;position:relative;z-index:1;font-weight:300;letter-spacing:.2px;}
+
+/* ── FEATURE GRID ── */
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.fc{border-radius:var(--r3);padding:18px 16px;cursor:pointer;transition:transform .2s,box-shadow .2s;border:1px solid transparent;position:relative;overflow:hidden;}
+.fc::after{content:'';position:absolute;bottom:0;right:0;width:60px;height:60px;border-radius:50%;opacity:.08;background:currentColor;transform:translate(20px,20px);}
+.fc:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg);}
+.fi{margin-bottom:10px;}
+.fn{font-size:12px;font-weight:500;letter-spacing:.2px;}
+.fs{font-size:11px;color:var(--mist);margin-top:3px;line-height:1.5;}
+
+/* ── FORMS ── */
+label.fl{font-size:10px;font-weight:500;color:var(--mist);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;display:block;}
+.fi2{width:100%;padding:11px 14px;border:1px solid var(--ashDD);border-radius:var(--r2);font-size:13px;color:var(--ink);background:var(--white);outline:none;transition:all .2s;font-family:var(--sans);}
+.fi2:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,168,76,.12);}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.fg2{margin-bottom:14px;}
+.gt{display:flex;background:var(--ashD);border-radius:var(--r2);padding:3px;gap:3px;margin-bottom:14px;}
+.gb{flex:1;padding:9px;border:none;border-radius:6px;font-size:11.5px;cursor:pointer;background:transparent;color:var(--mist);font-weight:500;transition:all .2s;font-family:var(--sans);letter-spacing:.2px;}
+.gb.on{background:var(--white);color:var(--ink);box-shadow:0 1px 6px rgba(0,0,0,.1);}
+
+/* ── BUTTONS ── */
+.btn{width:100%;padding:14px;border:none;border-radius:var(--r2);font-size:13px;font-weight:500;cursor:pointer;margin-top:8px;font-family:var(--sans);letter-spacing:.5px;transition:all .25s;}
+.bp{background:var(--ink);color:var(--white);}
+.bp:hover{background:var(--ink3);box-shadow:var(--shadow-lg);}
+.bg{background:var(--ash);color:var(--ink);border:1px solid var(--ashDD);}
+.bg:hover{border-color:var(--ink);}
+.bo{background:transparent;color:var(--gold);border:1px solid var(--gold);}
+.bo:hover{background:var(--goldL);}
+.bsm{padding:8px 16px;border:none;border-radius:var(--r);font-size:11.5px;font-weight:500;cursor:pointer;font-family:var(--sans);letter-spacing:.3px;transition:all .2s;}
+
+/* ── PILLS / TAGS ── */
+.pill{display:inline-block;font-size:9.5px;padding:3px 10px;border-radius:2px;font-weight:500;letter-spacing:.6px;text-transform:uppercase;}
+.pv{background:var(--goldL);color:var(--goldD);}
+.pt{background:var(--sageL);color:var(--sage);}
+.pp{background:var(--roseL);color:var(--rose);}
+.pa{background:var(--goldL);color:var(--goldD);}
+.pg2{background:var(--ashD);color:var(--mist);}
+
+/* ── TIPS / ALERTS ── */
+.tip{border-radius:var(--r2);padding:12px 16px;display:flex;gap:12px;align-items:flex-start;margin-bottom:12px;border:1px solid transparent;}
+.tv{background:var(--goldL);border-color:rgba(201,168,76,.2);}.tv p{font-size:12px;color:var(--goldD);line-height:1.7;}
+.tt{background:var(--sageL);border-color:rgba(74,112,96,.15);}.tt p{font-size:12px;color:var(--sage);line-height:1.7;}
+.ta{background:var(--goldL);border-color:rgba(201,168,76,.2);}.ta p{font-size:12px;color:var(--goldD);line-height:1.7;}
+.tpk{background:var(--roseL);border-color:rgba(192,82,74,.15);}.tpk p{font-size:12px;color:var(--rose);line-height:1.7;}
+
+/* ── SECTION LABELS ── */
+.sl{font-size:9.5px;font-weight:500;color:var(--fog);text-transform:uppercase;letter-spacing:1.5px;margin:20px 0 10px;border-bottom:1px solid var(--ashD);padding-bottom:8px;}
+
+/* ── SPINNER ── */
+.spin{width:36px;height:36px;border:1.5px solid var(--ashD);border-top-color:var(--gold);border-radius:50%;animation:sp .9s linear infinite;margin:0 auto 16px;}
+@keyframes sp{to{transform:rotate(360deg);}}
+
+/* ── METRICS ── */
+.mg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}
+.met{background:var(--white);border-radius:var(--r2);padding:14px 8px;text-align:center;border:1px solid var(--ashDD);}
+.mv{font-family:var(--serif);font-size:18px;font-weight:400;color:var(--ink);letter-spacing:.5px;}
+.ml{font-size:9.5px;color:var(--fog);margin-top:3px;letter-spacing:.5px;text-transform:uppercase;}
+
+/* ── SIZE TABLE ── */
+.tc{background:var(--white);border:1px solid var(--ashDD);border-radius:var(--r3);overflow:hidden;margin-bottom:14px;}
+.th{background:var(--ink);padding:12px 16px;}.th p{font-size:11px;font-weight:500;color:rgba(255,255,255,.7);letter-spacing:1px;text-transform:uppercase;}
+.tr{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;border-bottom:1px solid var(--ashD);font-size:12.5px;}
+.tr:last-child{border-bottom:none;}
+.tv2{font-family:var(--serif);font-weight:400;color:var(--ink);font-size:16px;letter-spacing:.5px;}
+.th2{color:var(--gold);font-size:18px;}
+
+/* ── PROFILE HEADER ── */
+.phdr{background:var(--ink2);border-radius:var(--r3);padding:22px;margin-bottom:14px;color:var(--white);position:relative;overflow:hidden;}
+.phdr::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 80% 20%,rgba(201,168,76,.1) 0%,transparent 55%);}
+.pav{width:48px;height:48px;border-radius:50%;background:transparent;border:1px solid rgba(201,168,76,.4);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:18px;font-weight:300;margin-bottom:12px;position:relative;z-index:1;color:var(--gold);}
+
+/* ── CHAT ── */
+.cb{background:var(--ash);border-radius:var(--r2);padding:14px;min-height:80px;margin-bottom:10px;max-height:280px;overflow-y:auto;}
+.mai{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px;}
+.mav{width:26px;height:26px;border-radius:50%;background:var(--ink);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:500;color:var(--gold);flex-shrink:0;letter-spacing:.5px;border:1px solid rgba(201,168,76,.3);}
+.mbb{background:var(--white);border-radius:0 var(--r2) var(--r2) var(--r2);padding:10px 14px;font-size:12.5px;line-height:1.7;border:1px solid var(--ashDD);max-width:90%;color:var(--ink);}
+.mu{justify-content:flex-end;display:flex;margin-bottom:10px;}
+.mu .mbb{background:var(--ink);color:rgba(255,255,255,.85);border-radius:var(--r2) 0 var(--r2) var(--r2);border:none;}
+.cr{display:flex;gap:8px;}
+.ci{flex:1;padding:11px 14px;border:1px solid var(--ashDD);border-radius:var(--r2);font-size:13px;outline:none;font-family:var(--sans);background:var(--white);}
+.ci:focus{border-color:var(--gold);}
+.cs2{padding:11px 18px;background:var(--ink);color:var(--white);border:none;border-radius:var(--r2);font-size:13px;cursor:pointer;font-weight:500;transition:background .2s;}
+.cs2:disabled{opacity:.3;}
+.ty{font-size:11px;color:var(--fog);padding:4px 0 8px;display:none;letter-spacing:.3px;}
+
+/* ── OUTFIT SLOTS ── */
+.sr{display:flex;gap:8px;overflow-x:auto;padding:4px 0 12px;scrollbar-width:none;}
+.sr::-webkit-scrollbar{display:none;}
+.sl2{min-width:68px;height:72px;border:1px solid var(--ashDD);border-radius:var(--r2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;background:var(--white);flex-shrink:0;position:relative;transition:all .2s;}
+.sl2:hover{border-color:var(--gold);background:var(--goldL);}
+.sl2.filled{border-color:var(--gold);background:var(--goldL);}
+.sl2.asl{border-color:var(--gold);background:var(--goldL);}
+.si{font-size:20px;opacity:.6;}
+.slb{font-size:9px;color:var(--fog);font-weight:500;letter-spacing:.3px;text-transform:uppercase;}
+.sx{position:absolute;top:-5px;right:-5px;width:16px;height:16px;border-radius:50%;background:var(--rose);color:#fff;font-size:9px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid var(--ash);z-index:5;}
+
+/* ── PRODUCT GRID ── */
+.pg3{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px;}
+.pc{border:1px solid var(--ashDD);border-radius:var(--r3);overflow:hidden;cursor:pointer;background:var(--white);transition:all .25s;}
+.pc:hover{border-color:var(--ink);box-shadow:var(--shadow-lg);transform:translateY(-1px);}
+.pi{height:148px;position:relative;overflow:hidden;background:var(--ash);}
+.pi img{width:100%;height:100%;object-fit:cover;transition:transform .4s ease;}
+.pc:hover .pi img{transform:scale(1.04);}
+.pbd{position:absolute;top:8px;right:8px;font-size:9px;padding:3px 8px;border-radius:2px;font-weight:500;z-index:2;letter-spacing:.4px;text-transform:uppercase;}
+.pb{padding:12px;}
+.pn{font-size:12px;font-weight:500;line-height:1.4;color:var(--ink);}
+.ps{font-size:10.5px;color:var(--fog);margin-top:2px;letter-spacing:.3px;}
+.pr{font-family:var(--serif);font-size:15px;font-weight:400;margin-top:6px;color:var(--ink);}
+
+/* ── SEARCH ── */
+.sb{display:flex;align-items:center;gap:10px;background:var(--white);border:1px solid var(--ashDD);border-radius:var(--r2);padding:12px 16px;margin-bottom:14px;transition:border-color .2s;}
+.sb:focus-within{border-color:var(--gold);}
+.sb input{border:none;background:transparent;font-size:13px;flex:1;outline:none;font-family:var(--sans);color:var(--ink);}
+.cs3{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:12px;}
+.cs3::-webkit-scrollbar{display:none;}
+.cc{padding:7px 16px;border:1px solid var(--ashDD);border-radius:2px;font-size:11.5px;cursor:pointer;white-space:nowrap;background:var(--white);color:var(--mist);font-weight:500;flex-shrink:0;font-family:var(--sans);letter-spacing:.3px;transition:all .2s;}
+.cc.on{background:var(--ink);color:var(--white);border-color:var(--ink);}
+.cc:hover:not(.on){border-color:var(--ink);color:var(--ink);}
+
+/* ── OCCASION GRID ── */
+.og{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px;}
+.oc{border-radius:var(--r3);padding:18px 14px;text-align:center;position:relative;overflow:hidden;cursor:pointer;border:1px solid transparent;transition:all .2s;}
+.oc:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg);}
+.oc.on{border-color:rgba(255,255,255,.5);box-shadow:var(--shadow-lg);}
+.ob{position:absolute;top:-8px;right:-8px;opacity:.08;pointer-events:none;font-size:56px;line-height:1;}
+.oi{font-size:28px;margin-bottom:6px;position:relative;z-index:1;}
+.ot{font-size:11.5px;font-weight:500;color:#fff;letter-spacing:.4px;position:relative;z-index:1;}
+
+/* ── OUTFIT CARDS ── */
+.ofc{border:1px solid var(--ashDD);border-radius:var(--r3);overflow:hidden;margin-bottom:12px;background:var(--white);}
+.ofh{padding:14px 16px;border-bottom:1px solid var(--ashD);display:flex;align-items:flex-start;justify-content:space-between;}
+.off{padding:12px 16px;border-top:1px solid var(--ashD);display:flex;align-items:center;justify-content:space-between;}
+
+/* ── MODAL ── */
+.mbg{display:none;position:fixed;inset:0;background:rgba(12,12,14,.6);z-index:300;align-items:flex-end;backdrop-filter:blur(6px);}
+.mbg.show{display:flex;}
+.mo{background:var(--white);border-radius:16px 16px 0 0;padding:24px;width:100%;max-width:540px;margin:0 auto;max-height:88vh;overflow-y:auto;}
+.mb{width:32px;height:3px;background:var(--ashD);border-radius:2px;margin:0 auto 18px;}
+.at{padding:7px 16px;border:1px solid var(--ashDD);border-radius:2px;font-size:11.5px;font-weight:500;cursor:pointer;background:var(--white);color:var(--mist);white-space:nowrap;flex-shrink:0;font-family:var(--sans);letter-spacing:.3px;transition:all .2s;}
+.at.on{background:var(--ink);color:var(--white);border-color:var(--ink);}
+.as{padding:5px 12px;border:1px solid var(--ashDD);border-radius:2px;font-size:11px;font-weight:500;cursor:pointer;background:var(--white);color:var(--mist);white-space:nowrap;flex-shrink:0;font-family:var(--sans);letter-spacing:.3px;transition:all .2s;}
+.as.on{background:var(--ink);color:var(--white);border-color:var(--ink);}
+
+/* ── LOADING STEPS ── */
+.lsi{background:var(--ash);color:var(--mist);border-radius:var(--r);padding:10px 14px;font-size:12px;transition:all .3s;margin-bottom:6px;border:1px solid transparent;letter-spacing:.2px;}
+.lsi.act{background:var(--goldL);color:var(--goldD);border-color:rgba(201,168,76,.2);font-weight:500;}
+.lsi.done{background:var(--sageL);color:var(--sage);border-color:rgba(74,112,96,.15);}
+
+/* ── PROGRESS BAR ── */
+.pb2{height:2px;background:var(--ashD);border-radius:1px;overflow:hidden;margin-top:12px;}
+.pbr{height:100%;background:var(--gold);border-radius:1px;width:0%;transition:width .5s ease;}
+
+/* ── GARMENT ANALYSIS BADGE ── */
+.gab{border-radius:var(--r2);padding:10px 14px;font-size:11.5px;font-weight:500;display:flex;align-items:center;gap:8px;margin-bottom:10px;border:1px solid transparent;line-height:1.5;}
+.gab-ok{background:var(--sageL);color:var(--sage);border-color:rgba(74,112,96,.2);}
+.gab-warn{background:var(--goldL);color:var(--goldD);border-color:rgba(201,168,76,.25);}
+.gab-proc{background:var(--ashD);color:var(--mist);border-color:var(--ashDD);}
+.gab-err{background:var(--roseL);color:var(--rose);border-color:rgba(192,82,74,.2);}
+
+/* ── SVG ICON DEFAULTS ── */
+svg{display:block;}
+</style>
+</head>
+<body>
+<div class="hdr">
+  <div class="logo">FitMe<span class="logo-dot"></span></div>
+  <div class="ub" id="ub" onclick="goPage('escaneo')">Crear perfil</div>
+</div>
+<div class="bnav">
+  <button class="nt on" onclick="goPage('inicio')" id="nav-inicio">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" stroke="white" stroke-width="1.5" stroke-linejoin="round"/><path d="M9 21V12h6v9" stroke="white" stroke-width="1.5" stroke-linejoin="round"/></svg>
+    <span>Inicio</span>
+  </button>
+  <button class="nt" onclick="goPage('escaneo')" id="nav-escaneo">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1" stroke="white" stroke-width="1.5"/><rect x="14" y="3" width="7" height="7" rx="1" stroke="white" stroke-width="1.5"/><rect x="3" y="14" width="7" height="7" rx="1" stroke="white" stroke-width="1.5"/><circle cx="17.5" cy="17.5" r="3.5" stroke="white" stroke-width="1.5"/><path d="M21 21l-1.5-1.5" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
+    <span>Escaneo</span>
+  </button>
+  <button class="nt" onclick="goPage('espejo')" id="nav-espejo">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" stroke="white" stroke-width="1.5"/><circle cx="12" cy="9" r="2.5" stroke="white" stroke-width="1.5"/></svg>
+    <span>Espejo</span>
+  </button>
+  <button class="nt" onclick="goPage('buscar')" id="nav-buscar">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="white" stroke-width="1.5"/><path d="M20 20l-3-3" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
+    <span>Buscar</span>
+  </button>
+  <button class="nt" onclick="goPage('outfits')" id="nav-outfits">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6L12 2z" stroke="white" stroke-width="1.5" stroke-linejoin="round"/></svg>
+    <span>Outfits</span>
+  </button>
+</div>
+
+<!-- INICIO -->
+<div class="pg act" id="page-inicio">
+  <div class="hero">
+    <div class="hi">
+      <svg width="48" height="48" viewBox="0 0 48 48" fill="none" style="margin:0 auto">
+        <circle cx="24" cy="24" r="23" stroke="rgba(201,168,76,.3)" stroke-width="1"/>
+        <path d="M24 14c-3.3 0-6 2.7-6 6s2.7 6 6 6 6-2.7 6-6-2.7-6-6-6z" stroke="rgba(201,168,76,.8)" stroke-width="1.2" fill="none"/>
+        <path d="M12 36c0-6.6 5.4-12 12-12s12 5.4 12 12" stroke="rgba(201,168,76,.8)" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="ht">Tu probador virtual</div>
+    <div class="hs">Inteligencia artificial que detecta tu talla, morfología y paleta de colores para recomendarte looks que te quedan perfecto.</div>
+    <div style="display:flex;justify-content:center;gap:16px;margin-top:18px;position:relative;z-index:1;">
+      <div style="text-align:center"><div style="font-family:var(--serif);font-size:22px;color:var(--gold);font-weight:300">98%</div><div style="font-size:9px;color:rgba(255,255,255,.35);letter-spacing:.8px;text-transform:uppercase;margin-top:2px">Precisión talla</div></div>
+      <div style="width:1px;background:rgba(255,255,255,.08)"></div>
+      <div style="text-align:center"><div style="font-family:var(--serif);font-size:22px;color:var(--gold);font-weight:300">−40%</div><div style="font-size:9px;color:rgba(255,255,255,.35);letter-spacing:.8px;text-transform:uppercase;margin-top:2px">Devoluciones</div></div>
+      <div style="width:1px;background:rgba(255,255,255,.08)"></div>
+      <div style="text-align:center"><div style="font-family:var(--serif);font-size:22px;color:var(--gold);font-weight:300">IA</div><div style="font-size:9px;color:rgba(255,255,255,.35);letter-spacing:.8px;text-transform:uppercase;margin-top:2px">Estilista 24/7</div></div>
+    </div>
+  </div>
+  <div id="homeCard"></div>
+  <div class="fg">
+    <div class="fc" onclick="goPage('escaneo')" style="background:var(--ink2);color:var(--white);">
+      <div class="fi"><svg width="28" height="28" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1" stroke="rgba(201,168,76,.9)" stroke-width="1.5"/><rect x="14" y="3" width="7" height="7" rx="1" stroke="rgba(201,168,76,.9)" stroke-width="1.5"/><rect x="3" y="14" width="7" height="7" rx="1" stroke="rgba(201,168,76,.9)" stroke-width="1.5"/><rect x="14" y="14" width="7" height="7" rx="1" stroke="rgba(201,168,76,.9)" stroke-width="1.5"/></svg></div>
+      <div class="fn" style="color:var(--white)">Escaneo IA</div>
+      <div class="fs" style="color:rgba(255,255,255,.4)">Detecta tus medidas y tallas exactas</div>
+    </div>
+    <div class="fc" onclick="goPage('espejo')" style="background:var(--goldL);color:var(--ink);">
+      <div class="fi"><svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" stroke="var(--goldD)" stroke-width="1.5"/><circle cx="12" cy="9" r="2.5" stroke="var(--goldD)" stroke-width="1.5"/></svg></div>
+      <div class="fn">Espejo virtual</div>
+      <div class="fs">Pruébate prendas con IA real</div>
+    </div>
+    <div class="fc" onclick="goPage('buscar')" style="background:var(--sageL);color:var(--ink);">
+      <div class="fi"><svg width="28" height="28" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="var(--sage)" stroke-width="1.5"/><path d="M20 20l-3-3" stroke="var(--sage)" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+      <div class="fn">Buscar prendas</div>
+      <div class="fs">En tu talla exacta</div>
+    </div>
+    <div class="fc" onclick="goPage('outfits')" style="background:var(--ash);color:var(--ink);border-color:var(--ashDD);">
+      <div class="fi"><svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6L12 2z" stroke="var(--ink3)" stroke-width="1.5" stroke-linejoin="round"/></svg></div>
+      <div class="fn">Outfits IA</div>
+      <div class="fs">Looks para cada ocasión</div>
+    </div>
+  </div>
+  <div class="tip tv"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10" stroke="var(--goldD)" stroke-width="1.5"/><path d="M12 8v4m0 4h.01" stroke="var(--goldD)" stroke-width="1.5" stroke-linecap="round"/></svg><p>Comienza por <strong>Escaneo</strong> — sube tu foto y la IA detecta tus medidas exactas en segundos.</p></div>
+  <button class="btn bp" onclick="goPage('escaneo')" style="letter-spacing:1.5px;font-size:12px;">COMENZAR ESCANEO</button>
+</div>
+
+<!-- ESCANEO -->
+<div class="pg" id="page-escaneo">
+  <div id="es1">
+    <div class="card">
+      <div class="ct">Crear mi perfil de tallas</div>
+      <div class="cs">La IA detectará tus medidas y las convertirá a todos los sistemas internacionales.</div>
+      <div class="fg2"><label class="fl">Soy</label>
+        <div class="gt" id="gT">
+          <button class="gb on" onclick="setG('mujer',this)">👗 Mujer</button>
+          <button class="gb" onclick="setG('hombre',this)">👔 Hombre</button>
+          <button class="gb" onclick="setG('otro',this)">🧑 Otro</button>
+        </div>
+      </div>
+      <div class="fr">
+        <div class="fg2"><label class="fl">Nombre</label><input class="fi2" id="inp-nombre" placeholder="Tu nombre"></div>
+        <div class="fg2"><label class="fl">Edad</label><input class="fi2" id="inp-edad" placeholder="25" type="number"></div>
+      </div>
+      <div class="fr">
+        <div class="fg2"><label class="fl">Altura (cm)</label><input class="fi2" id="inp-altura" placeholder="163" type="number"></div>
+        <div class="fg2"><label class="fl">Peso (kg)</label><input class="fi2" id="inp-peso" placeholder="60" type="number"></div>
+      </div>
+      <div class="fr">
+        <div class="fg2"><label class="fl">Color de cabello</label>
+          <select class="fi2" id="inp-cabello">
+            <option value="">Selecciona...</option>
+            <option value="negro">Negro</option>
+            <option value="castaño oscuro">Castaño oscuro</option>
+            <option value="castaño claro">Castaño claro</option>
+            <option value="rubio">Rubio</option>
+            <option value="pelirrojo">Pelirrojo</option>
+            <option value="canoso">Canoso / Blanco</option>
+            <option value="teñido">Teñido / Otro</option>
+          </select>
+        </div>
+        <div class="fg2"><label class="fl">Tono de piel</label>
+          <select class="fi2" id="inp-tez">
+            <option value="">Selecciona...</option>
+            <option value="muy clara">Muy clara</option>
+            <option value="clara">Clara</option>
+            <option value="media">Media / Trigueña</option>
+            <option value="olivácea">Olivácea</option>
+            <option value="morena">Morena</option>
+            <option value="oscura">Oscura</option>
+          </select>
+        </div>
+      </div>
+      <div class="fg2"><label class="fl">Color de ojos</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="cc" onclick="selOjos(this,'café')">🟤 Café</button>
+          <button class="cc" onclick="selOjos(this,'negro')">⚫ Negro</button>
+          <button class="cc" onclick="selOjos(this,'verde')">🟢 Verde</button>
+          <button class="cc" onclick="selOjos(this,'azul')">🔵 Azul</button>
+          <button class="cc" onclick="selOjos(this,'gris')">⚪ Gris</button>
+          <button class="cc" onclick="selOjos(this,'miel')">🟡 Miel</button>
+        </div>
+        <input type="hidden" id="inp-ojos" value="">
+      </div>
+      <button class="btn bp" onclick="escaneoStep2()">Continuar →</button>
+    </div>
+  </div>
+  <div id="es2" style="display:none">
+    <div class="card" style="margin-bottom:10px">
+      <div class="ct">📸 Sube tu foto (recomendado)</div>
+      <div class="cs">Foto de cuerpo completo para que la IA analice tu silueta real.</div>
+      <label for="foto-inp" id="foto-zone" style="display:flex;flex-direction:column;align-items:center;gap:8px;border:2px dashed var(--ashDD);border-radius:14px;padding:20px;cursor:pointer;background:var(--ash);transition:all .2s;margin-bottom:10px">
+        <span style="font-size:36px" id="foto-ico">📷</span>
+        <span style="font-size:13px;font-weight:500" id="foto-lbl">Toca para seleccionar foto</span>
+        <span style="font-size:11px;color:var(--fog)">JPG o PNG · Cuerpo completo de frente · buena iluminación</span>
+        <input type="file" id="foto-inp" accept="image/*" style="display:none" onchange="prevFoto(this)">
+      </label>
+      <!-- Análisis de foto persona -->
+      <div id="foto-analisis" style="display:none;margin-bottom:10px">
+        <div class="gab gab-proc" id="foto-gab">
+          <span style="font-size:14px">🔍</span>
+          <span id="foto-gab-txt">Analizando tu foto...</span>
+        </div>
+        <div id="foto-issues" style="display:none;margin-top:8px"></div>
+      </div>
+      <div id="foto-prev-wrap" style="display:none;text-align:center;margin-bottom:10px">
+        <img id="foto-prev" style="max-height:200px;border-radius:12px;object-fit:contain;border:1px solid var(--ashDD)">
+        <br><button class="bsm" style="background:var(--roseL);color:var(--rose);margin-top:8px" onclick="qFoto()">✕ Quitar foto</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">Cuéntale a la IA sobre tu cuerpo</div>
+      <div class="cs">Responde las preguntas para medidas más precisas.</div>
+      <div class="cb" id="chat-esc">
+        <div class="mai"><div class="mav">IA</div><div class="mbb">¡Hola! Para detectar tus medidas necesito preguntarte algo. ¿Cómo describirías tu silueta? ¿Tus hombros son más anchos que tu cadera, iguales, o tu cadera es más ancha?</div></div>
+      </div>
+      <div class="ty" id="ty-esc">✦ Analizando...</div>
+      <div class="cr" style="margin-bottom:12px">
+        <input class="ci" id="inp-esc" placeholder="Escribe tu respuesta..." onkeydown="if(event.key==='Enter')chatEsc()">
+        <button class="cs2" id="btn-esc" onclick="chatEsc()">→</button>
+      </div>
+      <button class="btn bp" onclick="analizarMedidas()">✦ Analizar con IA</button>
+      <button class="btn bg" onclick="mostrarStep(1)" style="margin-top:6px">← Volver</button>
+    </div>
+  </div>
+  <div id="es3" style="display:none">
+    <div class="card" style="text-align:center;padding:36px 20px">
+      <div class="spin"></div>
+      <div class="ct" style="margin-bottom:6px">Analizando con IA...</div>
+      <div class="cs" style="margin-bottom:16px">Detectando medidas y morfología</div>
+      <div id="ls1" class="lsi act">🤖 Procesando datos corporales...</div>
+      <div id="ls2" class="lsi">📏 Calculando medidas exactas...</div>
+      <div id="ls3" class="lsi">🌍 Convirtiendo tallas internacionales...</div>
+      <div id="ls4" class="lsi">✨ Detectando morfología y colores...</div>
+      <div id="ls5" class="lsi">💾 Guardando tu perfil...</div>
+    </div>
+  </div>
+  <div id="es4" style="display:none">
+    <div class="phdr">
+      <div class="pav" id="ph-av">MA</div>
+      <div style="font-size:18px;font-weight:600;color:#fff" id="ph-nombre">—</div>
+      <div style="font-size:13px;color:rgba(255,255,255,.7);margin-top:3px">Talla: <strong style="color:var(--gold)" id="ph-talla">—</strong></div>
+      <div style="margin-top:8px;display:flex;gap:5px;flex-wrap:wrap"><span class="pill pv" id="ph-morf">—</span><span class="pill pg2" id="ph-stats">—</span></div>
+    </div>
+    <div class="sl">Tus medidas</div>
+    <div class="mg">
+      <div class="met"><div class="mv" id="r-hom">—</div><div class="ml">Hombros</div></div>
+      <div class="met"><div class="mv" id="r-bus">—</div><div class="ml" id="r-bus-l">Busto</div></div>
+      <div class="met"><div class="mv" id="r-cin">—</div><div class="ml">Cintura</div></div>
+      <div class="met"><div class="mv" id="r-cad">—</div><div class="ml">Cadera</div></div>
+      <div class="met"><div class="mv" id="r-pie2">—</div><div class="ml">Pierna</div></div>
+      <div class="met"><div class="mv" id="r-pie">—</div><div class="ml">Pie CL</div></div>
+    </div>
+    <div class="sl">Tallas internacionales</div>
+    <div class="tc"><div class="th"><p>Conversión a todos los sistemas</p></div><div id="tallas-body"></div></div>
+    <div style="background:var(--goldL);border-radius:var(--r3);padding:14px;margin-bottom:12px;border-left:4px solid var(--gold)">
+      <div style="font-size:12px;font-weight:600;color:var(--goldD);margin-bottom:5px" id="morf-title">Morfología</div>
+      <div style="font-size:12px;color:var(--goldD);line-height:1.6;opacity:.85" id="morf-desc">—</div>
+      <div class="sl" style="color:var(--goldD);margin-top:8px">Colores favorables</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap" id="colores-row"></div>
+    </div>
+    <div class="card"><div class="ct">Consejos de estilo</div><div id="consejos-list"></div></div>
+    <div class="card">
+      <div class="ct">✦ Estilista IA personal</div>
+      <div class="cb" id="chat-est"></div>
+      <div class="ty" id="ty-est">✦ Escribiendo...</div>
+      <div class="cr">
+        <input class="ci" id="inp-est" placeholder="Pregunta sobre outfits, colores..." onkeydown="if(event.key==='Enter')chatEst()">
+        <button class="cs2" id="btn-est" onclick="chatEst()">→</button>
+      </div>
+    </div>
+    <button class="btn bg" onclick="goPage('espejo')" style="margin-top:6px">Ir al espejo →</button>
+    <button class="btn bo" onclick="mostrarStep(1)" style="margin-top:6px">Actualizar medidas</button>
+    <div class="card" style="margin-top:8px">
+      <div class="ct">Mis tallas conocidas</div>
+      <div class="cs">Puedes corregir estas tallas manualmente si sabes las tuyas exactas.</div>
+      <div class="fr">
+        <div class="fg2"><label class="fl">Calzado (CL)</label><input class="fi2" id="edit-calzado" placeholder="Ej: 38" type="number" oninput="actualizarTallaManual()"></div>
+        <div class="fg2"><label class="fl">Pantalón (CL)</label><input class="fi2" id="edit-pantalon" placeholder="Ej: 40" oninput="actualizarTallaManual()"></div>
+      </div>
+      <div class="fr">
+        <div class="fg2"><label class="fl">Poleras / Tops</label>
+          <select class="fi2" id="edit-top" onchange="actualizarTallaManual()">
+            <option value="">Auto</option>
+            <option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option>
+          </select>
+        </div>
+        <div class="fg2"><label class="fl">Vestidos / Chaquetas</label>
+          <select class="fi2" id="edit-vestido" onchange="actualizarTallaManual()">
+            <option value="">Auto</option>
+            <option>XS / 34</option><option>S / 36</option><option>M / 38</option><option>L / 40</option><option>XL / 42</option><option>XXL / 44</option>
+          </select>
+        </div>
+      </div>
+      <div class="tip tt"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10" stroke="var(--sage)" stroke-width="1.5"/><path d="M12 8v4m0 4h.01" stroke="var(--sage)" stroke-width="1.5" stroke-linecap="round"/></svg><p>Estos datos se usan para el estilista IA y el espejo virtual. Cuanto más precisos, mejor.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- ESPEJO -->
+<div class="pg" id="page-espejo">
+  <div id="esp-noperfil" class="tip ta"><span style="font-size:16px;flex-shrink:0">⚠️</span><p>Crea tu perfil en <strong>escaneo</strong> primero.</p></div>
+  <div id="esp-emoji" style="display:none">
+    <div style="background:#0F0E17;border-radius:20px;min-height:300px;display:flex;align-items:center;justify-content:center;flex-direction:column;position:relative;overflow:hidden;margin-bottom:14px;box-shadow:0 8px 32px rgba(0,0,0,.2)" id="mirrorWrap">
+      <div style="position:absolute;top:10px;right:10px" id="mBadge"><span class="pill pg2">Sin talla</span></div>
+      <div style="font-size:48px;line-height:1" id="mHead">🧑</div>
+      <div style="font-size:52px;line-height:1;margin-top:-4px;opacity:.25;transition:all .3s" id="mTorso">👕</div>
+      <div style="font-size:48px;line-height:1;margin-top:-6px;opacity:.25;transition:all .3s" id="mLegs">👖</div>
+      <div style="font-size:36px;line-height:1;margin-top:-6px;opacity:.25;transition:all .3s" id="mFeet">👟</div>
+    </div>
+    <div class="tip tv"><span style="font-size:16px;flex-shrink:0">📸</span><p>Sube tu foto en escaneo para activar el <strong>Virtual Try-On con IA real</strong>.</p></div>
+  </div>
+  <div id="esp-foto" style="display:none">
+    <div style="display:flex;gap:10px;margin-bottom:12px">
+      <div style="flex:1;border-radius:18px;overflow:hidden;max-height:360px;background:#0F0E17;position:relative" id="mirrorWrap">
+        <div style="position:absolute;top:8px;right:8px;z-index:2" id="mBadge"><span class="pill pg2">Sin talla</span></div>
+        <img id="mirror-photo" style="width:100%;height:100%;object-fit:cover;object-position:top;display:block" alt="Tu foto">
+        <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.6));padding:10px;z-index:2;text-align:center"><span style="font-size:10px;color:#fff;font-weight:500;opacity:.8;letter-spacing:.3px">Tu foto</span></div>
+      </div>
+      <div style="width:96px;display:flex;flex-direction:column;gap:5px">
+        <div style="font-size:9px;font-weight:500;color:var(--fog);text-transform:uppercase;text-align:center;letter-spacing:.5px">Outfit</div>
+        <div id="ps-top" style="display:none"><img id="ps-top-i" style="width:100%;height:66px;object-fit:cover;border-radius:10px;border:1.5px solid var(--ashDD)"><div id="ps-top-l" style="font-size:8px;text-align:center;font-weight:500;margin-top:2px;line-height:1.2;color:var(--mist)"></div></div>
+        <div id="ps-jacket" style="display:none"><img id="ps-jacket-i" style="width:100%;height:66px;object-fit:cover;border-radius:10px;border:1.5px solid var(--ashDD)"><div id="ps-jacket-l" style="font-size:8px;text-align:center;font-weight:500;margin-top:2px;line-height:1.2;color:var(--mist)"></div></div>
+        <div id="ps-pants" style="display:none"><img id="ps-pants-i" style="width:100%;height:66px;object-fit:cover;border-radius:10px;border:1.5px solid var(--ashDD)"><div id="ps-pants-l" style="font-size:8px;text-align:center;font-weight:500;margin-top:2px;line-height:1.2;color:var(--mist)"></div></div>
+        <div id="ps-shoes" style="display:none"><img id="ps-shoes-i" style="width:100%;height:56px;object-fit:cover;border-radius:10px;border:1.5px solid var(--ashDD)"><div id="ps-shoes-l" style="font-size:8px;text-align:center;font-weight:500;margin-top:2px;line-height:1.2;color:var(--mist)"></div></div>
+        <div id="ps-acc" style="display:none"><img id="ps-acc-i" style="width:100%;height:56px;object-fit:cover;border-radius:10px;border:1.5px solid var(--ashDD)"><div id="ps-acc-l" style="font-size:8px;text-align:center;font-weight:500;margin-top:2px;line-height:1.2;color:var(--mist)"></div></div>
+        <div id="ps-vacio" style="text-align:center;padding:10px 0;color:var(--fog);font-size:10px;line-height:1.5">Elige<br>prendas ↓</div>
+      </div>
+    </div>
+    <button class="btn bp" id="btn-tryon" onclick="iniciarTryOn()" style="display:none;margin-bottom:10px">✨ Probarme este outfit con IA real</button>
+    <div id="tryon-panel" style="display:none" class="card">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+        <div style="width:38px;height:38px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">🪞</div>
+        <div style="flex:1"><div style="font-size:14px;font-weight:600;font-family:var(--serif)">Virtual Try-On · IA</div><div style="font-size:11px;color:var(--fog)">Análisis automático de prenda + Fashn.ai</div></div>
+      </div>
+      <div id="tryon-sel" style="display:none">
+        <div style="font-size:10px;font-weight:500;color:var(--fog);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">¿Qué prenda quieres probar?</div>
+        <div id="tryon-btns" style="display:flex;flex-direction:column;gap:7px"></div>
+      </div>
+      <!-- ANÁLISIS DE PRENDA -->
+      <div id="tryon-analisis" style="display:none">
+        <div class="gab gab-proc" id="gab-msg">
+          <span style="font-size:14px">🔍</span>
+          <span id="gab-txt">Analizando imagen de prenda con IA...</span>
+        </div>
+      </div>
+      <div id="tryon-load" style="display:none;text-align:center;padding:24px 0">
+        <div class="spin" style="width:44px;height:44px;border-width:2px;margin-bottom:12px"></div>
+        <div style="font-size:13px;font-weight:500" id="tryon-msg">Preparando imágenes...</div>
+        <div style="font-size:11px;color:var(--fog);margin-top:4px" id="tryon-submsg">La IA está vistiendo tu foto · 20–50 seg</div>
+        <div class="pb2"><div class="pbr" id="tryon-bar"></div></div>
+      </div>
+      <div id="tryon-res" style="display:none">
+        <div style="font-size:10px;font-weight:500;color:var(--fog);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Tu espejo virtual</div>
+        <div id="vistas-tabs" style="display:flex;gap:6px;margin-bottom:10px;overflow-x:auto;scrollbar-width:none"></div>
+        <div style="border-radius:var(--r3);overflow:hidden;box-shadow:var(--shadow-lg);position:relative">
+          <img id="tryon-img" style="width:100%;display:block;transition:transform .4s ease" alt="Resultado Try-On">
+        </div>
+        <div id="bg-removed-badge" style="display:none" class="gab gab-ok" style="margin-top:10px">
+          <span>✓</span><span>Fondo de prenda eliminado automáticamente — mejor resultado</span>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <a id="tryon-dl" download="fitme_tryon.png" style="flex:1;padding:12px;background:var(--ink);color:var(--white);border-radius:var(--r2);font-size:12px;font-weight:500;text-decoration:none;text-align:center;letter-spacing:.4px">⬇ Guardar foto</a>
+          <button onclick="resetTryOn()" style="flex:1;padding:12px;background:var(--ash);color:var(--ink);border:1px solid var(--ashDD);border-radius:var(--r2);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--sans);letter-spacing:.4px">↩ Probar otra</button>
+        </div>
+        <div id="reaccion-wrap" style="margin-top:12px;background:var(--ash);border-radius:var(--r2);padding:14px;border:1px solid var(--ashDD)">
+          <div style="font-size:11px;font-weight:500;color:var(--mist);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px">¿Cómo te ves?</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button onclick="reaccionTryOn('me encanta, me queda perfecto')" style="padding:8px 14px;background:var(--white);border:1.5px solid var(--sage);border-radius:var(--r2);font-size:12px;font-weight:500;cursor:pointer;color:var(--sage);font-family:var(--sans)">💚 ¡Me encanta!</button>
+            <button onclick="reaccionTryOn('no me convence del todo')" style="padding:8px 14px;background:var(--white);border:1.5px solid var(--ashDD);border-radius:var(--r2);font-size:12px;font-weight:500;cursor:pointer;color:var(--mist);font-family:var(--sans)">🤔 Más o menos</button>
+            <button onclick="reaccionTryOn('no me queda bien')" style="padding:8px 14px;background:var(--white);border:1.5px solid var(--rose);border-radius:var(--r2);font-size:12px;font-weight:500;cursor:pointer;color:var(--rose);font-family:var(--sans)">❌ No me queda</button>
+          </div>
+          <div id="reaccion-resp" style="display:none;margin-top:10px;font-size:12px;line-height:1.7;color:var(--ink);padding:12px;background:var(--white);border-radius:var(--r2);border:1px solid var(--ashDD)"></div>
+        </div>
+      </div>
+      <div id="tryon-err" style="display:none;padding:12px 14px;background:var(--roseL);border-radius:var(--r2);font-size:12px;color:var(--rose);line-height:1.6;border:1px solid rgba(192,82,74,.2)"></div>
+    </div>
+  </div>
+  <div class="sr">
+    <div class="sl2 asl" id="slot-top" onclick="openSel('top')"><span class="si">👕</span><span class="slb">Polera</span></div>
+    <div class="sl2" id="slot-pants" onclick="openSel('pants')"><span class="si">👖</span><span class="slb">Pantalón</span></div>
+    <div class="sl2" id="slot-shoes" onclick="openSel('shoes')"><span class="si">👟</span><span class="slb">Calzado</span></div>
+    <div class="sl2" id="slot-jacket" onclick="openSel('jacket')"><span class="si">🧥</span><span class="slb">Chaqueta</span></div>
+    <div class="sl2" id="slot-acc" onclick="openArmario()"><span class="si">👜</span><span class="slb">Accesorio</span></div>
+    <div class="sl2" style="border-color:var(--gold);background:var(--goldL)" onclick="document.getElementById('prenda-inp').click()">
+      <span class="si">📸</span><span class="slb" style="color:var(--goldD)">+Prenda</span>
+      <input type="file" id="prenda-inp" accept="image/*" style="display:none" onchange="subirPrenda(this)">
+    </div>
+  </div>
+  <div id="outfit-res" style="display:none">
+    <div class="card"><div class="ct">Tu outfit</div><div id="outfit-lista"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:1px solid var(--ashD);margin-top:8px">
+        <div><div style="font-size:11px;color:var(--fog)">Total</div><div style="font-family:var(--serif);font-size:18px;font-weight:400" id="outfit-total">$0</div></div>
+        <button class="bsm" style="background:var(--ink);color:var(--white)" onclick="alert('Checkout próximamente')">Comprar todo</button>
+      </div>
+    </div>
+    <button style="width:100%;padding:10px;background:transparent;color:var(--fog);border:1.5px dashed var(--ashDD);border-radius:var(--r2);font-size:12px;cursor:pointer;font-family:var(--sans);letter-spacing:.3px" onclick="limpiarOutfit()">↺ Quitar todas las prendas</button>
+  </div>
+</div>
+
+<!-- BUSCAR -->
+<div class="pg" id="page-buscar">
+  <div class="sb"><span style="font-size:16px">🔍</span><input id="search-inp" placeholder="camisa, vestido, jean..." oninput="filtrarPrendas()"><span style="font-size:12px;color:var(--fog);cursor:pointer" onclick="document.getElementById('search-inp').value='';filtrarPrendas()">✕</span></div>
+  <div class="cs3">
+    <div class="cc on" onclick="setCat(this,'todos')">Todos</div>
+    <div class="cc" onclick="setCat(this,'poleras')">Poleras</div>
+    <div class="cc" onclick="setCat(this,'pantalones')">Pantalones</div>
+    <div class="cc" onclick="setCat(this,'vestidos')">Vestidos</div>
+    <div class="cc" onclick="setCat(this,'chaquetas')">Chaquetas</div>
+    <div class="cc" onclick="setCat(this,'calzado')">Calzado</div>
+    <div class="cc" onclick="setCat(this,'accesorios')">Accesorios</div>
+  </div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+    <span style="font-size:12px;color:var(--mist)" id="res-count">— prendas</span>
+    <span class="pill pv" id="talla-badge">Talla: —</span>
+  </div>
+  <div id="color-season-badge" style="margin-bottom:10px"></div>
+  <div class="pg3" id="prendas-grid"></div>
+</div>
+
+<!-- OUTFITS -->
+<div class="pg" id="page-outfits">
+  <div class="card">
+    <div class="ct">✦ Outfits propuestos por IA</div>
+    <div class="cs">Elige la ocasión y la IA crea looks completos para tu talla y morfología.</div>
+    <div class="sl">¿Para qué ocasión?</div>
+    <div class="og" id="ocaGrid">
+      <div class="oc" style="background:linear-gradient(135deg,#1E3A5F,#2563EB)" onclick="selectOca(this,'trabajo')"><div class="ob">🏙️</div><div class="oi">💼</div><div class="ot">Reunión / Trabajo</div></div>
+      <div class="oc" style="background:linear-gradient(135deg,#F97316,#FCD34D)" onclick="selectOca(this,'casual')"><div class="ob">🌿</div><div class="oi">☀️</div><div class="ot">Casual</div></div>
+      <div class="oc" style="background:linear-gradient(135deg,#7C3AED,#EC4899)" onclick="selectOca(this,'fiesta')"><div class="ob">🎆</div><div class="oi">🎉</div><div class="ot">Fiesta / Noche</div></div>
+      <div class="oc" style="background:linear-gradient(135deg,#E11D79,#FB7185)" onclick="selectOca(this,'cita')"><div class="ob">🌹</div><div class="oi">💕</div><div class="ot">Cita romántica</div></div>
+      <div class="oc" style="background:linear-gradient(135deg,#059669,#34D399)" onclick="selectOca(this,'deporte')"><div class="ob">🏟️</div><div class="oi">🏃</div><div class="ot">Deporte / Gym</div></div>
+      <div class="oc" style="background:linear-gradient(135deg,#0891B2,#38BDF8)" onclick="selectOca(this,'viaje')"><div class="ob">🌍</div><div class="oi">✈️</div><div class="ot">Viaje</div></div>
+    </div>
+    <div class="tip tv" id="oca-noperfil"><span style="font-size:16px;flex-shrink:0">💡</span><p>Crea tu perfil en <strong>escaneo</strong> primero.</p></div>
+    <button class="btn bp" id="btn-generar" onclick="generarOutfit()" style="display:none">✦ Generar outfit con IA</button>
+  </div>
+  <div id="outfit-loading" style="display:none" class="card"><div class="spin"></div><div style="font-size:13px;color:var(--fog);text-align:center">Creando tu outfit perfecto...</div></div>
+  <div id="outfits-result"></div>
+  <div class="card">
+    <div class="ct">💬 Estilista IA — chat libre</div>
+    <div class="cs">Cuéntame cualquier situación y te propongo el look ideal.</div>
+    <div class="cb" id="chat-out"></div>
+    <div class="ty" id="ty-out">✦ Creando tu outfit...</div>
+    <div class="cr">
+      <input class="ci" id="inp-out" placeholder="Ej: reunión y después cena..." onkeydown="if(event.key==='Enter')chatOut()">
+      <button class="cs2" id="btn-out" onclick="chatOut()">→</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SELECTOR PRENDA -->
+<div class="mbg" id="modal-sel">
+  <div class="mo">
+    <div class="mb"></div>
+    <div style="font-size:16px;font-weight:600;margin-bottom:12px;font-family:var(--serif)" id="modal-sel-title">Elige una prenda</div>
+    <div class="pg3" id="modal-sel-grid" style="max-height:360px;overflow-y:auto"></div>
+    <button class="btn bg" onclick="closeModal('modal-sel')">Cancelar</button>
+  </div>
+</div>
+
+<!-- MODAL ARMARIO ACCESORIOS -->
+<div class="mbg" id="modal-armario" style="align-items:stretch">
+  <div class="mo" style="border-radius:16px 16px 0 0;padding:0;max-height:90vh;display:flex;flex-direction:column;overflow:hidden">
+    <div style="padding:16px 18px 10px;border-bottom:1px solid var(--ashDD);flex-shrink:0">
+      <div class="mb"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div style="font-size:16px;font-weight:600;font-family:var(--serif)">👜 Armario de accesorios</div>
+        <button onclick="closeModal('modal-armario')" style="background:var(--ashD);border:none;border-radius:50%;width:30px;height:30px;font-size:14px;cursor:pointer;color:var(--mist)">✕</button>
+      </div>
+      <div style="display:flex;gap:6px;margin-bottom:10px" id="acc-gen-tabs">
+        <button class="at on" onclick="filtArmario(this,'mujer')">👗 Mujer</button>
+        <button class="at" onclick="filtArmario(this,'hombre')">👔 Hombre</button>
+        <button class="at" onclick="filtArmario(this,'unisex')">🧑 Unisex</button>
+      </div>
+      <div style="display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px" id="acc-sub-tabs">
+        <button class="as on" onclick="filtSubcat(this,'todos')">Todos</button>
+      </div>
+    </div>
+    <div style="overflow-y:auto;padding:14px;flex:1"><div class="pg3" id="armario-grid" style="margin-bottom:0"></div></div>
+  </div>
+</div>
+
+<!-- MODAL PRENDA SUBIDA -->
+<div class="mbg" id="modal-prenda">
+  <div class="mo">
+    <div class="mb"></div>
+    <div style="font-size:16px;font-weight:600;margin-bottom:6px;font-family:var(--serif)">📸 Prenda subida</div>
+    <div style="text-align:center;margin-bottom:14px"><img id="prenda-prev" style="max-height:160px;border-radius:var(--r2);object-fit:contain;border:1px solid var(--ashDD)"></div>
+    <div class="fg2"><label class="fl">Nombre</label><input class="fi2" id="prenda-nombre" placeholder="Ej: Camisa de flores azul"></div>
+    <div class="fg2"><label class="fl">Tipo</label>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px" id="tipo-grid">
+        <div class="cc" onclick="selTipo(this,'top')">👕 Top</div>
+        <div class="cc" onclick="selTipo(this,'pants')">👖 Pantalón</div>
+        <div class="cc" onclick="selTipo(this,'shoes')">👟 Calzado</div>
+        <div class="cc" onclick="selTipo(this,'jacket')">🧥 Chaqueta</div>
+        <div class="cc" onclick="selTipo(this,'acc')">👜 Accesorio</div>
+        <div class="cc" onclick="selTipo(this,'vestido')">👗 Vestido</div>
+      </div>
+    </div>
+    <button class="btn bp" onclick="confirmarPrenda()">✓ Agregar al espejo</button>
+    <button class="btn bg" onclick="closeModal('modal-prenda')" style="margin-top:6px">Cancelar</button>
+  </div>
+</div>
+
+<script>
+// ══ TODO EL JS DEL PROYECTO ORIGINAL (sin cambios) ══
+function selOjos(el,color){
+  document.querySelectorAll('[onclick^="selOjos"]').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  document.getElementById('inp-ojos').value=color;
+}
+let gender='mujer',userData={},perfil={},hasPerfil=false;
+let chatHistEst=[],chatHistOut=[];
+let outfit={top:null,pants:null,shoes:null,jacket:null,acc:null};
+let oEmoji={top:'👕',pants:'👖',shoes:'👟',jacket:'🧥',acc:'👜'};
+let curSlot=null,ocaSel='casual',actCat='todos';
+let misPrendas=[],subB64=null,subTipo='top',escIdx=0;
+
+const colorimetria={
+  'clara-negro-café':{temporada:'Invierno',favorables:['negro','blanco','azul marino','borgoña','rojo','gris'],desfavorables:['beige','camel','naranja']},
+  'clara-negro-verde':{temporada:'Invierno',favorables:['negro','blanco','esmeralda','azul marino','fucsia'],desfavorables:['beige','camel','naranja']},
+  'clara-negro-azul':{temporada:'Invierno',favorables:['negro','blanco','azul','plata','gris'],desfavorables:['camel','naranja','café']},
+  'clara-rubio-azul':{temporada:'Verano',favorables:['azul','lavanda','rosa','blanco','gris','azul marino'],desfavorables:['naranja','amarillo','café']},
+  'clara-rubio-verde':{temporada:'Primavera',favorables:['verde','coral','melocotón','amarillo','blanco'],desfavorables:['negro','borgoña','gris oscuro']},
+  'clara-castaño oscuro-café':{temporada:'Otoño',favorables:['camel','terracota','verde oliva','marrón','naranja','beige'],desfavorables:['negro','blanco puro','rosa']},
+  'media-negro-café':{temporada:'Otoño',favorables:['camel','terracota','verde oliva','naranja','marrón'],desfavorables:['blanco puro','rosa pálido']},
+  'media-castaño oscuro-café':{temporada:'Otoño',favorables:['terracota','naranja','verde oliva','camel','marrón'],desfavorables:['blanco puro','gris pálido']},
+  'olivácea-negro-café':{temporada:'Primavera',favorables:['verde','coral','turquesa','blanco','amarillo'],desfavorables:['gris','lila','rosa pálido']},
+  'morena-negro-café':{temporada:'Verano',favorables:['blanco','azul marino','coral','turquesa','fucsia','rojo'],desfavorables:['beige','camel','marrón']},
+  'oscura-negro-café':{temporada:'Invierno',favorables:['blanco','rojo','azul eléctrico','amarillo','naranja vivo'],desfavorables:['beige','camel','marrón']},
+};
+function getColorimetria(){const tez=userData.tez||'';const cab=userData.cabello||'';const key=tez+'-'+cab+'-'+(userData.ojos||'café');return colorimetria[key]||null;}
+function colorFavorable(colorPrenda){const c=getColorimetria();if(!c||!colorPrenda)return null;const cp=colorPrenda.toLowerCase();const esFav=c.favorables.some(f=>cp.includes(f)||f.includes(cp));const esDes=c.desfavorables.some(d=>cp.includes(d)||d.includes(cp));if(esFav)return'favorable';if(esDes)return'desfavorable';return'neutro';}
+
+const cat=[
+  {id:1,nombre:'Polera básica blanca',cat:'poleras',tipo:'top',color:'blanco',emoji:'👕',img:'https://images.pexels.com/photos/5698851/pexels-photo-5698851.jpeg?auto=compress&cs=tinysrgb&w=400',bg:'#F7F5F2',precio:12990,marca:'Zara',tags:'polera blanca basica'},
+  {id:2,nombre:'Polera azul marino',cat:'poleras',tipo:'top',color:'azul marino',emoji:'👕',img:'https://images.pexels.com/photos/7679720/pexels-photo-7679720.jpeg?auto=compress&cs=tinysrgb&w=400',bg:'#E6F1FB',precio:14990,marca:'H&M',tags:'polera azul'},
+  {id:3,nombre:'Blusa floral estampada',cat:'poleras',tipo:'top',color:'rosa',emoji:'🌸',img:'https://images.pexels.com/photos/6311392/pexels-photo-6311392.jpeg?auto=compress&cs=tinysrgb&w=400',bg:'#FBEAF0',precio:19990,marca:'Mango',tags:'blusa floral'},
+  {id:4,nombre:'Camisa Oxford blanca',cat:'poleras',tipo:'top',color:'blanco',emoji:'👔',img:'https://images.pexels.com/photos/297933/pexels-photo-297933.jpeg?auto=compress&cs=tinysrgb&w=400',bg:'#EAF3DE',precio:24990,marca:'Massimo Dutti',tags:'camisa formal'},
+  {id:5,nombre:'Polera negra clásica',cat:'poleras',tipo:'top',color:'negro',emoji:'🖤',img:'https://images.pexels.com/photos/8364025/pexels-photo-8364025.jpeg?auto=compress&cs=tinysrgb&w=400',bg:'#F1EFE8',precio:11990,marca:'Zara',tags:'polera negra'},
+  {id:6,nombre:'Blusa seda rosa',cat:'poleras',tipo:'top',color:'rosa',emoji:'👚',img:'https://images.pexels.com/photos/6311387/pexels-photo-6311387.jpeg?auto=compress&cs=tinysrgb&w=400',bg:'#FBEAF0',precio:29990,marca:'Mango',tags:'blusa rosa'},
+  {id:7,nombre:'Jean slim azul',cat:'pantalones',tipo:'pants',color:'azul',emoji:'👖',img:'https://images.pexels.com/photos/1598507/pexels-photo-1598507.jpeg?auto=compress&cs=tinysrgb&w=400',bg:'#E6F1FB',precio:34990,marca:"Levi's",tags:'jean azul slim'},
+  {id:8,nombre:'Pantalón negro recto',cat:'pantalones',tipo:'pants',color:'negro',emoji:'👖',img:'https://images.pexels.com/photos/6311616/pexels-photo-6311616.jpeg?auto=compress&cs=tinysrgb&w=400',bg:'#F1EFE8',precio:39990,marca:'Zara',tags:'pantalon negro'},
+  {id:9,nombre:'Pantalón camel tiro alto',cat:'pantalones',tipo:'pants',color:'camel',emoji:'👖',img:'https://images.pexels.com/photos/6311401/pexels-photo-6311401.jpeg?auto=compress&cs=tinysrgb&w=400',bg:'#FAEEDA',precio:32990,marca:'H&M',tags:'pantalon camel'},
+  {id:10,nombre:'Jean blanco recto',cat:'pantalones',tipo:'pants',color:'blanco',emoji:'👖',img:'https://images.pexels.com/photos/7679457/pexels-photo-7679457.jpeg?auto=compress&cs=tinysrgb&w=400',bg:'#F7F5F2',precio:27990,marca:'Bershka',tags:'jean blanco'},
+  {id:11,nombre:'Vestido lino midi verde',cat:'vestidos',tipo:'top',color:'verde',emoji:'👗',img:'https://images.pexels.com/photos/6311163/pexels-photo-6311163.jpeg?auto=compress&cs=tinysrgb&w=400',bg:'#EAF3DE',precio:34990,marca:'Zara',tags:'vestido midi verde'},
+  {id:12,nombre:'Vestido negro elegante',cat:'vestidos',tipo:'top',color:'negro',emoji:'👗',img:'https://images.pexels.com/photos/985635/pexels-photo-985635.jpeg?auto=compress&cs=tinysrgb&w=400',bg:'#F1EFE8',precio:59990,marca:'Massimo Dutti',tags:'vestido negro formal'},
+  {id:13,nombre:'Vestido floral verano',cat:'vestidos',tipo:'top',color:'coral',emoji:'👗',img:'https://images.pexels.com/photos/6311371/pexels-photo-6311371.jpeg?auto=compress&cs=tinysrgb&w=400',bg:'#FBEAF0',precio:29990,marca:'Mango',tags:'vestido floral verano'},
+  {id:14,nombre:'Blazer azul marino',cat:'chaquetas',tipo:'jacket',color:'azul marino',emoji:'🧥',img:'https://images.pexels.com/photos/1043474/pexels-photo-1043474.jpeg?auto=compress&cs=tinysrgb&w=400',bg:'#E6F1FB',precio:59990,marca:'Banana Republic',tags:'blazer azul formal'},
+  {id:15,nombre:'Chaqueta bomber verde',cat:'chaquetas',tipo:'jacket',color:'verde',emoji:'🧥',img:'https://images.pexels.com/photos/8364028/pexels-photo-8364028.jpeg?auto=compress&cs=tinysrgb&w=400',bg:'#EAF3DE',precio:49990,marca:'Zara',tags:'chaqueta bomber casual'},
+  {id:16,nombre:'Abrigo camel largo',cat:'chaquetas',tipo:'jacket',color:'camel',emoji:'🧥',img:'https://images.pexels.com/photos/6311602/pexels-photo-6311602.jpeg?auto=compress&cs=tinysrgb&w=400',bg:'#FAEEDA',precio:89990,marca:'Mango',tags:'abrigo camel'},
+  {id:17,nombre:'Zapatillas blancas',cat:'calzado',tipo:'shoes',color:'blanco',emoji:'👟',img:'https://images.pexels.com/photos/2529148/pexels-photo-2529148.jpeg?auto=compress&cs=tinysrgb&w=400',bg:'#F7F5F2',precio:39990,marca:'Adidas',tags:'zapatillas blancas'},
+  {id:18,nombre:'Zapato camel bajo',cat:'calzado',tipo:'shoes',color:'camel',emoji:'👠',img:'https://images.pexels.com/photos/336372/pexels-photo-336372.jpeg?auto=compress&cs=tinysrgb&w=400',bg:'#FAEEDA',precio:34990,marca:'Bershka',tags:'zapato camel formal'},
+  {id:19,nombre:'Botines negros taco',cat:'calzado',tipo:'shoes',color:'negro',emoji:'👢',img:'https://images.pexels.com/photos/1707828/pexels-photo-1707828.jpeg?auto=compress&cs=tinysrgb&w=400',bg:'#F1EFE8',precio:54990,marca:'Zara',tags:'botines negros'},
+  {id:20,nombre:'Zapatillas running',cat:'calzado',tipo:'shoes',color:'azul',emoji:'👟',img:'https://images.pexels.com/photos/1464625/pexels-photo-1464625.jpeg?auto=compress&cs=tinysrgb&w=400',bg:'#E6F1FB',precio:79990,marca:'Nike',tags:'zapatillas running'},
+  {id:201,nombre:'Cartera mini negro',cat:'accesorios',tipo:'acc',subcat:'cartera',genero:'mujer',emoji:'👛',img:'https://images.pexels.com/photos/1152077/pexels-photo-1152077.jpeg?auto=compress&cs=tinysrgb&w=400',bg:'#F1EFE8',precio:39990,marca:'Zara',tags:'cartera mujer'},
+  {id:202,nombre:'Bolso tote beige',cat:'accesorios',tipo:'acc',subcat:'bolso',genero:'mujer',emoji:'🛍️',img:'https://images.pexels.com/photos/3731256/pexels-photo-3731256.jpeg?auto=compress&cs=tinysrgb&w=400',bg:'#FAEEDA',precio:29990,marca:'H&M',tags:'bolso mujer'},
+  {id:203,nombre:'Collar dorado largo',cat:'accesorios',tipo:'acc',subcat:'collar',genero:'mujer',emoji:'📿',img:'https://images.pexels.com/photos/6624862/pexels-photo-6624862.jpeg?auto=compress&cs=tinysrgb&w=400',bg:'#FEF3C7',precio:22990,marca:'Zara',tags:'collar mujer'},
+  {id:204,nombre:'Pulsera dorada',cat:'accesorios',tipo:'acc',subcat:'pulsera',genero:'mujer',emoji:'🪬',img:'https://images.pexels.com/photos/10876214/pexels-photo-10876214.jpeg?auto=compress&cs=tinysrgb&w=400',bg:'#FEF3C7',precio:16990,marca:'Zara',tags:'pulsera mujer'},
+  {id:205,nombre:'Cinturón fino dorado',cat:'accesorios',tipo:'acc',subcat:'cinturon',genero:'mujer',emoji:'🪢',img:'https://images.pexels.com/photos/4066288/pexels-photo-4066288.jpeg?auto=compress&cs=tinysrgb&w=400',bg:'#FEF3C7',precio:17990,marca:'Zara',tags:'cinturon mujer'},
+  {id:206,nombre:'Turbante floral',cat:'accesorios',tipo:'acc',subcat:'turbante',genero:'mujer',emoji:'🧣',img:'https://images.pexels.com/photos/6311392/pexels-photo-6311392.jpeg?auto=compress&cs=tinysrgb&w=400',bg:'#FBEAF0',precio:12990,marca:'Mango',tags:'turbante mujer'},
+  {id:207,nombre:'Reloj rose gold',cat:'accesorios',tipo:'acc',subcat:'reloj',genero:'mujer',emoji:'⌚',img:'https://images.pexels.com/photos/9978720/pexels-photo-9978720.jpeg?auto=compress&cs=tinysrgb&w=400',bg:'#FBEAF0',precio:69990,marca:'MK',tags:'reloj mujer'},
+  {id:208,nombre:'Cartera clutch fiesta',cat:'accesorios',tipo:'acc',subcat:'cartera',genero:'mujer',emoji:'✨',img:'https://images.pexels.com/photos/3731256/pexels-photo-3731256.jpeg?auto=compress&cs=tinysrgb&w=400',bg:'#EDE9FE',precio:29990,marca:'Zara',tags:'clutch fiesta mujer'},
+  {id:101,nombre:'Reloj clásico dorado',cat:'accesorios',tipo:'acc',subcat:'reloj',genero:'hombre',emoji:'⌚',img:'https://images.pexels.com/photos/190819/pexels-photo-190819.jpeg?auto=compress&cs=tinysrgb&w=400',bg:'#FEF3C7',precio:89990,marca:'Casio',tags:'reloj hombre'},
+  {id:102,nombre:'Reloj negro deportivo',cat:'accesorios',tipo:'acc',subcat:'reloj',genero:'hombre',emoji:'⌚',img:'https://images.pexels.com/photos/277390/pexels-photo-277390.jpeg?auto=compress&cs=tinysrgb&w=400',bg:'#F1EFE8',precio:129990,marca:'Garmin',tags:'reloj deportivo hombre'},
+  {id:103,nombre:'Cadena acero plateada',cat:'accesorios',tipo:'acc',subcat:'cadena',genero:'hombre',emoji:'📿',img:'https://images.pexels.com/photos/10876213/pexels-photo-10876213.jpeg?auto=compress&cs=tinysrgb&w=400',bg:'#F3F4F6',precio:24990,marca:'H&M',tags:'cadena hombre'},
+  {id:104,nombre:'Cinturón cuero negro',cat:'accesorios',tipo:'acc',subcat:'cinturon',genero:'hombre',emoji:'🪢',img:'https://images.pexels.com/photos/1152077/pexels-photo-1152077.jpeg?auto=compress&cs=tinysrgb&w=400',bg:'#F1EFE8',precio:29990,marca:'Massimo Dutti',tags:'cinturon hombre'},
+  {id:105,nombre:'Maletín cuero café',cat:'accesorios',tipo:'acc',subcat:'maletin',genero:'hombre',emoji:'💼',img:'https://images.pexels.com/photos/2422278/pexels-photo-2422278.jpeg?auto=compress&cs=tinysrgb&w=400',bg:'#FAEEDA',precio:89990,marca:'Samsonite',tags:'maletin hombre'},
+  {id:106,nombre:'Mochila urbana negra',cat:'accesorios',tipo:'acc',subcat:'mochila',genero:'hombre',emoji:'🎒',img:'https://images.pexels.com/photos/1152077/pexels-photo-1152077.jpeg?auto=compress&cs=tinysrgb&w=400',bg:'#F1EFE8',precio:49990,marca:'Eastpak',tags:'mochila hombre'},
+  {id:107,nombre:'Corbata seda azul',cat:'accesorios',tipo:'acc',subcat:'corbata',genero:'hombre',emoji:'👔',img:'https://images.pexels.com/photos/45055/pexels-photo-45055.jpeg?auto=compress&cs=tinysrgb&w=400',bg:'#E6F1FB',precio:24990,marca:'Hugo Boss',tags:'corbata hombre'},
+  {id:108,nombre:'Pisacorbatas dorado',cat:'accesorios',tipo:'acc',subcat:'pisacorbata',genero:'hombre',emoji:'📎',img:'https://images.pexels.com/photos/190819/pexels-photo-190819.jpeg?auto=compress&cs=tinysrgb&w=400',bg:'#FEF3C7',precio:12990,marca:'H&M',tags:'pisacorbata hombre'},
+  {id:109,nombre:'Pulsera cuero trenzada',cat:'accesorios',tipo:'acc',subcat:'pulsera',genero:'hombre',emoji:'🪬',img:'https://images.pexels.com/photos/1191531/pexels-photo-1191531.jpeg?auto=compress&cs=tinysrgb&w=400',bg:'#FAEEDA',precio:14990,marca:'Zara',tags:'pulsera hombre'},
+  {id:301,nombre:'Gafas sol negras',cat:'accesorios',tipo:'acc',subcat:'gafas',genero:'unisex',emoji:'🕶️',img:'https://images.pexels.com/photos/1152077/pexels-photo-1152077.jpeg?auto=compress&cs=tinysrgb&w=400',bg:'#F1EFE8',precio:24990,marca:'Ray-Ban',tags:'gafas sol'},
+  {id:302,nombre:'Gorro lana gris',cat:'accesorios',tipo:'acc',subcat:'gorro',genero:'unisex',emoji:'🧢',img:'https://images.pexels.com/photos/1152077/pexels-photo-1152077.jpeg?auto=compress&cs=tinysrgb&w=400',bg:'#F3F4F6',precio:12990,marca:'Zara',tags:'gorro'},
+  {id:303,nombre:'Bufanda lana merino',cat:'accesorios',tipo:'acc',subcat:'bufanda',genero:'unisex',emoji:'🧣',img:'https://images.pexels.com/photos/1191531/pexels-photo-1191531.jpeg?auto=compress&cs=tinysrgb&w=400',bg:'#FAEEDA',precio:19990,marca:'Zara',tags:'bufanda'}
+];
+
+function goPage(p){document.querySelectorAll('.pg').forEach(x=>x.classList.remove('act'));document.querySelectorAll('.nt').forEach(x=>x.classList.remove('on'));document.getElementById('page-'+p).classList.add('act');document.getElementById('nav-'+p).classList.add('on');if(p==='buscar')filtrarPrendas();if(p==='espejo')updateEspejo();if(p==='outfits')initOutfits();if(p==='inicio')updateHomeCard();window.scrollTo(0,0);}
+function closeModal(id){document.getElementById(id).classList.remove('show');}
+function delay(ms){return new Promise(r=>setTimeout(r,ms));}
+function addMsg(txt,role,boxId){const box=document.getElementById(boxId);if(!box)return;const d=document.createElement('div');d.className=role==='ai'?'mai':'mu';d.innerHTML=role==='ai'?`<div class="mav">IA</div><div class="mbb">${txt}</div>`:`<div class="mbb">${txt}</div>`;box.appendChild(d);box.scrollTop=box.scrollHeight;}
+
+function setG(g,btn){gender=g;document.querySelectorAll('#gT .gb').forEach(b=>b.classList.remove('on'));btn.classList.add('on');}
+function mostrarStep(n){[1,2,3,4].forEach(i=>{const e=document.getElementById('es'+i);if(e)e.style.display=i===n?'block':'none';});}
+function escaneoStep2(){const nombre=document.getElementById('inp-nombre').value.trim();const altura=document.getElementById('inp-altura').value;const peso=document.getElementById('inp-peso').value;if(!nombre||!altura||!peso){alert('Completa nombre, altura y peso');return;}userData={nombre,altura:+altura,peso:+peso,edad:+(document.getElementById('inp-edad').value)||25,cabello:document.getElementById('inp-cabello').value,tez:document.getElementById('inp-tez').value,ojos:document.getElementById('inp-ojos').value};mostrarStep(2);}
+async function prevFoto(input) {
+  const file = input.files[0]; if (!file) return;
+  const r = new FileReader();
+  r.onload = async e => {
+    const dataUrl = e.target.result;
+    // Mostrar preview inmediato
+    document.getElementById('foto-prev').src = dataUrl;
+    document.getElementById('foto-prev-wrap').style.display = 'block';
+    document.getElementById('foto-ico').textContent = '⏳';
+    document.getElementById('foto-lbl').textContent = 'Analizando foto...';
+    document.getElementById('foto-analisis').style.display = 'block';
+    document.getElementById('foto-issues').style.display = 'none';
+    setFotoGAB('proc', '🔍 Analizando tu foto con IA...');
+
+    // Analizar con Claude Vision
+    const resultado = await analizarFotoPersona(dataUrl);
+
+    if (resultado.apta) {
+      // Foto válida
+      window._foto = dataUrl;
+      window._fotoAnalisis = resultado;
+      setFotoGAB('ok', resultado.mensaje || '✓ Foto válida para el Try-On');
+      document.getElementById('foto-ico').textContent = '✅';
+      document.getElementById('foto-lbl').textContent = 'Foto lista';
+      document.getElementById('foto-zone').style.borderColor = 'var(--sage)';
+      document.getElementById('foto-zone').style.background = 'var(--sageL)';
+      // Ocultar analisis tras 2s
+      setTimeout(() => {
+        document.getElementById('foto-analisis').style.display = 'none';
+      }, 2500);
+    } else {
+      // Foto con problemas — no guardar, mostrar errores
+      window._foto = null;
+      setFotoGAB('err', '⚠ La foto necesita mejoras para el Try-On');
+      document.getElementById('foto-ico').textContent = '⚠️';
+      document.getElementById('foto-lbl').textContent = 'Reemplaza la foto';
+      document.getElementById('foto-zone').style.borderColor = 'var(--rose)';
+      document.getElementById('foto-zone').style.background = 'var(--roseL)';
+      // Mostrar lista de problemas
+      if (resultado.problemas && resultado.problemas.length > 0) {
+        const issuesEl = document.getElementById('foto-issues');
+        issuesEl.style.display = 'block';
+        issuesEl.innerHTML = resultado.problemas.map(p =>
+          `<div style="display:flex;gap:8px;align-items:flex-start;font-size:12px;color:var(--rose);margin-bottom:6px;line-height:1.5">
+            <span style="flex-shrink:0">→</span><span>${p}</span>
+          </div>`
+        ).join('') +
+        (resultado.sugerencia ? `<div class="gab gab-warn" style="margin-top:8px"><span>💡</span><span>${resultado.sugerencia}</span></div>` : '');
+      }
+    }
+  };
+  r.readAsDataURL(file);
+}
+
+function setFotoGAB(tipo, texto) {
+  const el = document.getElementById('foto-gab');
+  const txtEl = document.getElementById('foto-gab-txt');
+  if (!el || !txtEl) return;
+  el.className = 'gab gab-' + tipo;
+  txtEl.textContent = texto;
+}
+
+async function analizarFotoPersona(dataUrl) {
+  const mime = dataUrl.split(';')[0].split(':')[1] || 'image/jpeg';
+  const b64 = dataUrl.split(',')[1];
+
+  const prompt = `Analiza esta foto para un sistema de virtual try-on de ropa. Evalúa si la foto es adecuada.
+Responde SOLO con JSON válido, sin texto extra:
+{
+  "hay_persona": true,
+  "cuerpo_visible": true,
+  "pose_frontal": true,
+  "cuerpo_completo": true,
+  "multiples_personas": false,
+  "iluminacion": "buena|regular|mala",
+  "calidad_imagen": 85,
+  "apta_tryon": true,
+  "problemas": [],
+  "sugerencia": null
+}
+Criterios estrictos:
+- hay_persona: hay al menos una persona claramente visible
+- cuerpo_visible: se ve al menos torso completo
+- pose_frontal: la persona está de frente o casi de frente (no de espaldas ni de perfil extremo)
+- cuerpo_completo: se ve desde cabeza hasta al menos rodillas (ideal pies)
+- multiples_personas: hay más de una persona en la foto
+- iluminacion: buena=luz uniforme sin sombras duras, regular=algo oscura, mala=muy oscura o sobreexpuesta
+- calidad_imagen: 0-100, penalizar fotos borrosas, muy pixeladas o recortadas
+- apta_tryon: true SOLO si hay_persona=true, cuerpo_visible=true, pose_frontal=true, iluminacion!=mala, calidad_imagen>=50
+- problemas: lista de problemas específicos en español, vacía si no hay
+- sugerencia: consejo concreto si hay problemas, null si no hay`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 400,
+        messages: [{ role: 'user', content: [
+          { type: 'image', source: { type: 'base64', media_type: mime, data: b64 } },
+          { type: 'text', text: prompt }
+        ]}]
+      })
+    });
+    const data = await resp.json();
+    const txt = data.content?.map(b => b.text || '').join('') || '';
+    const result = JSON.parse(txt.replace(/```json|```/g, '').trim());
+
+    // Construir lista de problemas legibles
+    const problemas = result.problemas || [];
+    if (!result.hay_persona) problemas.push('No se detecta una persona en la foto');
+    if (!result.cuerpo_visible) problemas.push('No se ve el cuerpo completo — sube una foto de cuerpo entero');
+    if (!result.pose_frontal) problemas.push('La pose debe ser de frente al lente, no de espaldas ni de perfil');
+    if (result.multiples_personas) problemas.push('Hay más de una persona — usa una foto individual');
+    if (result.iluminacion === 'mala') problemas.push('Iluminación insuficiente — busca un lugar con buena luz natural');
+    if (result.calidad_imagen < 50) problemas.push('La imagen está muy borrosa o pixelada');
+
+    const calidad = result.calidad_imagen || 75;
+    let mensaje;
+    if (result.apta_tryon) {
+      if (calidad >= 80) mensaje = `✓ Foto perfecta para el Try-On (calidad ${calidad}/100)`;
+      else if (calidad >= 60) mensaje = `✓ Foto aceptable (calidad ${calidad}/100) — funcionará bien`;
+      else mensaje = `⚠ Foto con calidad baja (${calidad}/100) — el resultado puede variar`;
+    }
+
+    return {
+      apta: result.apta_tryon === true,
+      calidad,
+      problemas: [...new Set(problemas)], // deduplicar
+      sugerencia: result.sugerencia,
+      mensaje
+    };
+  } catch(e) {
+    // Si falla el análisis, aceptar la foto sin bloquear
+    return { apta: true, calidad: 70, problemas: [], sugerencia: null, mensaje: '✓ Foto cargada' };
+  }
+}
+
+function qFoto() {
+  window._foto = null;
+  window._fotoAnalisis = null;
+  document.getElementById('foto-inp').value = '';
+  document.getElementById('foto-prev-wrap').style.display = 'none';
+  document.getElementById('foto-analisis').style.display = 'none';
+  document.getElementById('foto-issues').style.display = 'none';
+  document.getElementById('foto-ico').textContent = '📷';
+  document.getElementById('foto-lbl').textContent = 'Toca para seleccionar foto';
+  document.getElementById('foto-zone').style.borderColor = 'var(--ashDD)';
+  document.getElementById('foto-zone').style.background = 'var(--ash)';
+}
+const escPregs=['¡Gracias! ¿Tus hombros y cadera están en proporción, o alguno es más prominente?','¿Tienes cintura marcada o es más recta?','¿Cuál es tu parte favorita para resaltar?','¡Perfecto! Con esa info puedo calcular tus medidas. Pulsa "Analizar con IA" cuando estés listo/a.'];
+async function chatEsc(){const inp=document.getElementById('inp-esc');const msg=inp.value.trim();if(!msg)return;addMsg(msg,'user','chat-esc');inp.value='';document.getElementById('btn-esc').disabled=true;document.getElementById('ty-esc').style.display='block';await delay(800);addMsg(escPregs[Math.min(escIdx++,escPregs.length-1)],'ai','chat-esc');document.getElementById('ty-esc').style.display='none';document.getElementById('btn-esc').disabled=false;}
+async function analizarMedidas(){mostrarStep(3);animLS();if(window._foto){try{const b64=window._foto.split(',')[1];const mime=window._foto.split(';')[0].split(':')[1]||'image/jpeg';const prompt=`Analiza esta foto de cuerpo completo para moda. Género: ${gender}, altura: ${userData.altura}cm, peso: ${userData.peso}kg${userData.cabello?', cabello '+userData.cabello:''}${userData.tez?', tez '+userData.tez:''}${userData.ojos?', ojos '+userData.ojos:''}.
+Responde SOLO JSON válido sin texto extra:
+{"morfologia_tipo":"tipo pera","morfologia_desc":"descripcion detallada","hombros_cm":38,"busto_cm":88,"cintura_cm":70,"cadera_cm":96,"pierna_cm":80,"talla_letra":"M","talla_num":40,"colores_favorables":[{"nombre":"Azul marino","hex":"#185FA5"},{"nombre":"Terracota","hex":"#C2553A"}],"consejos":["consejo 1","consejo 2","consejo 3"]}`;const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:mime,data:b64}},{type:'text',text:prompt}]}]})});const data=await resp.json();const txt=data.content.map(b=>b.text||'').join('').replace(/```json|```/g,'').trim();perfil=buildIA(JSON.parse(txt));}catch(e){perfil=calcPerfil();}}else{perfil=calcPerfil();}hasPerfil=true;await delay(3500);mostrarStep(4);renderPerfil();}
+function buildIA(ia){const f=gender==='mujer';const tn=ia.talla_num||40;const tl=ia.talla_letra||'M';const pie=f?Math.round(35+(tn-36)*0.15):Math.round(40+(tn-46)*0.15);return{medidas:{hombros:ia.hombros_cm+'cm',busto:ia.busto_cm+'cm',cintura:ia.cintura_cm+'cm',cadera:ia.cadera_cm+'cm',pierna:ia.pierna_cm+'cm',pie:String(pie)},tallas:{chile:tl+'/'+tn,europa:String(tn),usa:f?tl+'/'+(tn-30):tl+'/'+(tn-12),uk:f?String(tn-28):tl,japon:f?String(tn-25):String(tn/2),italia:f?String(tn+4):String(tn),pantalon:f?tn+' CL':(32+(tn-48)/2)+'x32',zapatillas:pie+' CL'},morfologia:{tipo:ia.morfologia_tipo,descripcion:ia.morfologia_desc,colores:ia.colores_favorables||[{nombre:'Azul marino',hex:'#185FA5'}]},consejos:ia.consejos||['Elige prendas que te hagan sentir bien.'],talla_principal:tl+'/'+tn+' CL'};}
+function calcPerfil(){const f=gender==='mujer';const alt=userData.altura||163;const pes=userData.peso||60;const imc=pes/((alt/100)**2);let tn,tl;if(f){if(imc<19){tn=36;tl='XS';}else if(imc<21){tn=38;tl='S';}else if(imc<23.5){tn=40;tl='M';}else if(imc<26){tn=42;tl='L';}else if(imc<29){tn=44;tl='XL';}else{tn=46;tl='XXL';}}else{if(imc<19){tn=46;tl='S';}else if(imc<21.5){tn=48;tl='M';}else if(imc<24){tn=50;tl='L';}else if(imc<27){tn=52;tl='XL';}else{tn=54;tl='XXL';}}const ms=f?[{tipo:'tipo pera',descripcion:'Tu cadera es más ancha que tus hombros. Los tops con volumen en hombros y pantalones rectos equilibran tu figura.',colores:[{nombre:'Azul marino',hex:'#185FA5'},{nombre:'Verde oliva',hex:'#3B6D11'},{nombre:'Camel',hex:'#854F0B'}]},{tipo:'tipo reloj de arena',descripcion:'Hombros y cadera equilibrados con cintura marcada. Casi cualquier silueta te favorece.',colores:[{nombre:'Borgoña',hex:'#7D1128'},{nombre:'Azul marino',hex:'#185FA5'},{nombre:'Camel',hex:'#854F0B'}]},{tipo:'tipo manzana',descripcion:'Tu torso tiende a ser más ancho. Las líneas verticales y cuellos en V te favorecen mucho.',colores:[{nombre:'Negro',hex:'#1C1917'},{nombre:'Azul oscuro',hex:'#0C447C'},{nombre:'Gris',hex:'#888780'}]}]:[{tipo:'tipo rectángulo',descripcion:'Proporciones equilibradas. Los cinturones y capas ayudan a crear definición visual.',colores:[{nombre:'Azul marino',hex:'#185FA5'},{nombre:'Gris',hex:'#888780'},{nombre:'Verde',hex:'#3B6D11'}]},{tipo:'tipo triángulo invertido',descripcion:'Hombros más anchos que caderas. Los pantalones con detalles abajo equilibran tu figura.',colores:[{nombre:'Azul marino',hex:'#185FA5'},{nombre:'Negro',hex:'#1C1917'},{nombre:'Verde',hex:'#3B6D11'}]}];const morf=ms[Math.floor(Math.random()*ms.length)];const pie=f?Math.round(35+(tn-36)*0.15):Math.round(40+(tn-46)*0.15);const cs={'tipo pera':['Usa tops con hombros marcados o volumen','Pantalones de corte recto o bootcut','Vestidos wrap con cintura marcada'],'tipo reloj de arena':['Prendas ajustadas que resaltan tu cintura','Vestidos de tubo y trajes entallados','Evita prendas muy holgadas'],'tipo manzana':['Líneas verticales y cuellos en V','Prendas que fluyan desde los hombros','Pantalones de tiro alto y corte recto'],'tipo rectángulo':['Cinturones para crear curvas visuales','Capas y chaquetas estructuradas','Estampados que añaden volumen'],'tipo triángulo invertido':['Pantalones con detalles en la parte baja','Camisas lisas en colores oscuros','Cortes en A y vestidos que se ensanchan']};return{medidas:{hombros:(f?36+tn/10:42+tn/10)+'cm',busto:(f?78+((tn-36)/2)*4:88+((tn-46)/2)*4)+'cm',cintura:(f?60+((tn-36)/2)*3:76+((tn-46)/2)*3)+'cm',cadera:(f?84+((tn-36)/2)*4:90+((tn-46)/2)*4)+'cm',pierna:(f?78+(alt-160)*0.4:84+(alt-170)*0.4)+'cm',pie:String(pie)},tallas:{chile:tl+'/'+tn,europa:String(tn),usa:f?tl+'/'+(tn-30):tl+'/'+(tn-12),uk:f?String(tn-28):tl,japon:f?String(tn-25):String(tn/2),italia:f?String(tn+4):String(tn),pantalon:f?tn+' CL':(32+(tn-48)/2)+'x32',zapatillas:pie+' CL'},morfologia:morf,consejos:cs[morf.tipo]||[],talla_principal:tl+'/'+tn+' CL'};}
+function animLS(){const ids=['ls1','ls2','ls3','ls4','ls5'];ids.forEach((id,i)=>setTimeout(()=>{if(i>0){const p=document.getElementById(ids[i-1]);if(p)p.className='lsi done';}const el=document.getElementById(id);if(el)el.className='lsi act';},i*650));}
+function renderPerfil(){const p=perfil;document.getElementById('ph-av').textContent=userData.nombre.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);document.getElementById('ph-nombre').textContent=userData.nombre;document.getElementById('ph-talla').textContent=p.talla_principal;document.getElementById('ph-morf').textContent='Morfología: '+p.morfologia.tipo;document.getElementById('ph-stats').textContent=userData.altura+'cm · '+userData.peso+'kg';document.getElementById('r-hom').textContent=p.medidas.hombros;document.getElementById('r-bus').textContent=p.medidas.busto;document.getElementById('r-bus-l').textContent=gender==='mujer'?'Busto':'Pecho';document.getElementById('r-cin').textContent=p.medidas.cintura;document.getElementById('r-cad').textContent=p.medidas.cadera;document.getElementById('r-pie2').textContent=p.medidas.pierna;document.getElementById('r-pie').textContent=p.medidas.pie;const flags=[{f:'🇨🇱',l:'Chile',v:p.tallas.chile,hl:true},{f:'🇪🇺',l:'Europa',v:p.tallas.europa},{f:'🇺🇸',l:'USA',v:p.tallas.usa},{f:'🇬🇧',l:'UK',v:p.tallas.uk},{f:'🇯🇵',l:'Japón',v:p.tallas.japon},{f:'🇮🇹',l:'Italia',v:p.tallas.italia},{f:'👖',l:'Pantalón',v:p.tallas.pantalon},{f:'👟',l:'Calzado',v:p.tallas.zapatillas}];document.getElementById('tallas-body').innerHTML=flags.map(r=>`<div class="tr"><span>${r.f} ${r.l}</span><span class="tv2${r.hl?' th2':''}">${r.v}</span></div>`).join('');document.getElementById('morf-title').textContent='Morfología: '+p.morfologia.tipo;document.getElementById('morf-desc').textContent=p.morfologia.descripcion;document.getElementById('colores-row').innerHTML=p.morfologia.colores.map(c=>`<div style="display:flex;align-items:center;gap:5px"><div style="width:18px;height:18px;border-radius:50%;background:${c.hex};border:1px solid rgba(0,0,0,.1)"></div><span style="font-size:11px;font-weight:600;color:${c.hex}">${c.nombre}</span></div>`).join('');document.getElementById('consejos-list').innerHTML=p.consejos.map(c=>`<div style="display:flex;gap:8px;margin-bottom:7px;font-size:12px;line-height:1.5"><span style="color:var(--sage);font-weight:600;flex-shrink:0">✓</span><span>${c}</span></div>`).join('');document.getElementById('ub').textContent=userData.nombre.split(' ')[0]+' · '+p.talla_principal;document.getElementById('ub').classList.add('on');document.getElementById('talla-badge').textContent='Talla: '+p.talla_principal;if(document.getElementById('edit-calzado'))document.getElementById('edit-calzado').value=p.medidas.pie||'';if(document.getElementById('edit-pantalon'))document.getElementById('edit-pantalon').value=(p.tallas.pantalon||'').replace(/\D/g,'')||'';initEstilista();updateEspejo();}
+
+function initEstilista(){const gl=gender==='mujer'?'mujer':gender==='hombre'?'hombre':'persona';const prendas=gender==='mujer'?'blusas, vestidos, faldas, carteras, accesorios femeninos':gender==='hombre'?'camisas, pantalones, zapatos de cuero, maletines, corbatas':'ropa unisex';chatHistEst=[{role:'user',content:`Eres el estilista de FitMe para ${gl}. Usuario: ${userData.nombre}, ${gl}, ${userData.altura}cm. Talla: ${perfil.talla_principal}. Morfología: ${perfil.morfologia.tipo}. Colores: ${perfil.morfologia.colores.map(c=>c.nombre).join(', ')}. REGLA: SOLO sugiere prendas para ${gl} (${prendas}). Máx 4 líneas, en español.`},{role:'assistant',content:`¡Hola ${userData.nombre}! 🎉 Conozco tu talla ${perfil.talla_principal} y morfología ${perfil.morfologia.tipo}. ¿Para qué ocasión necesitas ayuda?`}];addMsg(`¡Hola ${userData.nombre}! 🎉 Conozco tu talla ${perfil.talla_principal} y morfología ${perfil.morfologia.tipo}. ¿Para qué ocasión necesitas ayuda?`,'ai','chat-est');}
+async function chatEst(){const inp=document.getElementById('inp-est');const msg=inp.value.trim();if(!msg)return;addMsg(msg,'user','chat-est');inp.value='';document.getElementById('btn-est').disabled=true;document.getElementById('ty-est').style.display='block';try{chatHistEst.push({role:'user',content:msg});const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,messages:chatHistEst})});const data=await resp.json();const txt=data.content.map(b=>b.text||'').join('').trim();chatHistEst.push({role:'assistant',content:txt});addMsg(txt,'ai','chat-est');}catch(e){addMsg('Error de conexión. Intenta de nuevo.','ai','chat-est');}document.getElementById('ty-est').style.display='none';document.getElementById('btn-est').disabled=false;}
+
+function updateEspejo(){const tieneF=!!window._foto;document.getElementById('esp-noperfil').style.display=(!hasPerfil&&!tieneF)?'flex':'none';document.getElementById('esp-emoji').style.display=(hasPerfil&&!tieneF)?'block':'none';document.getElementById('esp-foto').style.display=tieneF?'block':'none';if(tieneF)document.getElementById('mirror-photo').src=window._foto;const bEl=document.getElementById('mBadge');if(bEl)bEl.innerHTML=hasPerfil?`<span class="pill pv">Talla ${perfil.talla_principal}</span>`:'<span class="pill pg2">Sin talla</span>';}
+function openSel(tipo){curSlot=tipo;const cats={top:['poleras','vestidos'],pants:['pantalones'],shoes:['calzado'],jacket:['chaquetas'],acc:['accesorios']};const titles={top:'Elige polera o vestido',pants:'Elige pantalón',shoes:'Elige calzado',jacket:'Elige chaqueta',acc:'Elige accesorio'};document.getElementById('modal-sel-title').textContent=titles[tipo];const mis=misPrendas.filter(p=>p.tipo===tipo);const base=cat.filter(p=>{if(!cats[tipo].includes(p.cat))return false;if(!p.genero||p.genero==='unisex')return true;return p.genero===gender||(gender==='otro');});let html='';if(mis.length>0){html+=`<div style="grid-column:1/-1;font-size:10px;font-weight:500;color:var(--goldD);text-transform:uppercase;margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid var(--ashDD);letter-spacing:.8px">📸 Mis prendas</div>`;html+=mis.map(p=>pcHTML(p)).join('');html+=`<div style="grid-column:1/-1;font-size:10px;font-weight:500;color:var(--fog);text-transform:uppercase;margin:10px 0 6px;letter-spacing:.8px">Catálogo</div>`;}html+=base.filter(p=>!p.esMia).map(p=>pcHTML(p)).join('');if(!html.trim()){html='<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--fog);font-size:13px;">No hay prendas en esta categoría.</div>';}document.getElementById('modal-sel-grid').innerHTML=html;document.getElementById('modal-sel').classList.add('show');}
+function pcHTML(p){const cf=hasPerfil?colorFavorable(p.color):null;const badge=cf==='favorable'?`<span class="pbd" style="background:var(--sageL);color:var(--sage)">✓ Tu color</span>`:cf==='desfavorable'?`<span class="pbd" style="background:var(--roseL);color:var(--rose)">No favorece</span>`:(p.esMia?`<span class="pbd" style="background:var(--goldL);color:var(--goldD)">Mía</span>`:'');return `<div class="pc" onclick="elegirP(${p.id})"><div class="pi" style="background:${p.esMia?'#f0f0f0':p.bg}"><img src="${p.img}" loading="lazy" style="width:100%;height:100%;object-fit:${p.esMia?'contain':'cover'}" onerror="this.style.display='none';this.parentElement.innerHTML+='<span style=\'font-size:40px;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)\'>${p.emoji}</span>'">${badge}</div><div class="pb"><div class="pn">${p.nombre}</div><div class="ps">${p.marca||''}</div><div class="pr">${p.precio>0?'$'+p.precio.toLocaleString('es-CL'):'<span style="color:var(--sage)">Propia</span>'}</div></div></div>`;}
+function elegirP(id){closeModal('modal-sel');const p=cat.find(x=>x.id===id)||misPrendas.find(x=>x.id===id);if(p)ponerPrenda(p,curSlot);}
+function ponerPrenda(p,tipo){outfit[tipo]=p;const ps=document.getElementById('ps-'+tipo);const psi=document.getElementById('ps-'+tipo+'-i');const psl=document.getElementById('ps-'+tipo+'-l');if(ps&&psi){psi.src=p.img;if(psl)psl.textContent=p.nombre.split(' ').slice(0,2).join(' ');ps.style.display='block';}document.getElementById('ps-vacio').style.display='none';const hayF=!!window._foto,hayP=Object.values(outfit).filter(Boolean).length>0;const btnT=document.getElementById('btn-tryon');if(btnT)btnT.style.display=(hayF&&hayP)?'block':'none';const em={top:'mTorso',pants:'mLegs',shoes:'mFeet',jacket:'mTorso'};const el=document.getElementById(em[tipo]);if(el){el.textContent=p.emoji;el.style.opacity='1';}const slot=document.getElementById('slot-'+tipo);const lbl={top:'Polera',pants:'Pantalón',shoes:'Calzado',jacket:'Chaqueta',acc:'Accesorio'};if(slot){slot.className='sl2 filled';slot.innerHTML=`<div style="width:100%;height:42px;overflow:hidden;border-radius:10px 10px 0 0"><img src="${p.img}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.parentElement.innerHTML='<span style=\'font-size:22px;display:flex;align-items:center;justify-content:center;height:100%\'>${p.emoji}</span>'"></div><span style="font-size:8px;font-weight:500;padding:2px 4px;text-align:center;color:var(--mist)">${p.nombre.split(' ').slice(0,2).join(' ')} ✓</span><div class="sx" onclick="qPrenda('${tipo}',event)">✕</div>`;}actualizarOutfit();document.getElementById('tryon-panel').style.display='none';}
+function qPrenda(tipo,e){e.stopPropagation();outfit[tipo]=null;const ps=document.getElementById('ps-'+tipo);if(ps)ps.style.display='none';const hayP=Object.values(outfit).filter(Boolean).length>0;if(!hayP){document.getElementById('ps-vacio').style.display='block';const b=document.getElementById('btn-tryon');if(b)b.style.display='none';}const em={top:'mTorso',pants:'mLegs',shoes:'mFeet',jacket:'mTorso'};const el=document.getElementById(em[tipo]);if(el){el.textContent=oEmoji[tipo];el.style.opacity='0.25';}const slot=document.getElementById('slot-'+tipo);const lbl={top:'Polera',pants:'Pantalón',shoes:'Calzado',jacket:'Chaqueta',acc:'Accesorio'};if(slot){slot.className='sl2';slot.innerHTML=`<span class="si">${oEmoji[tipo]}</span><span class="slb">${lbl[tipo]}</span>`;slot.onclick=()=>openSel(tipo);}actualizarOutfit();}
+function qPrendaById(id){for(const[tipo,p]of Object.entries(outfit)){if(p&&p.id===id){qPrenda(tipo,{stopPropagation:()=>{}});break;}}}
+function limpiarOutfit(){['top','pants','shoes','jacket','acc'].forEach(t=>{outfit[t]=null;const ps=document.getElementById('ps-'+t);if(ps)ps.style.display='none';const em={top:'mTorso',pants:'mLegs',shoes:'mFeet',jacket:'mTorso'};const el=document.getElementById(em[t]);if(el){el.textContent=oEmoji[t];el.style.opacity='0.25';}const slot=document.getElementById('slot-'+t);const lbl={top:'Polera',pants:'Pantalón',shoes:'Calzado',jacket:'Chaqueta',acc:'Accesorio'};if(slot){slot.className='sl2';slot.innerHTML=`<span class="si">${oEmoji[t]}</span><span class="slb">${lbl[t]}</span>`;slot.onclick=()=>openSel(t);}});document.getElementById('ps-vacio').style.display='block';const b=document.getElementById('btn-tryon');if(b)b.style.display='none';document.getElementById('tryon-panel').style.display='none';actualizarOutfit();}
+function actualizarOutfit(){const prendas=Object.values(outfit).filter(Boolean);const res=document.getElementById('outfit-res');if(prendas.length===0){res.style.display='none';return;}res.style.display='block';const total=prendas.reduce((a,p)=>a+(p.precio||0),0);document.getElementById('outfit-lista').innerHTML=prendas.map(p=>`<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--ashD)"><div style="width:48px;height:48px;border-radius:var(--r2);overflow:hidden;flex-shrink:0;background:${p.bg}"><img src="${p.img}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.parentElement.innerHTML='<span style=\'font-size:24px;display:flex;align-items:center;justify-content:center;height:100%\'>${p.emoji}</span>'"></div><div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.nombre}</div><div style="font-size:10px;color:var(--fog)">${p.marca||'Mi guardarropa'}</div><div style="display:flex;gap:5px;margin-top:4px"><span style="font-size:10px;padding:2px 8px;background:var(--ash);border:1px solid var(--ashDD);border-radius:var(--r);cursor:pointer;color:var(--mist)" onclick="curSlot='${p.tipo}';openSel('${p.tipo}')">🔄 Cambiar</span><span style="font-size:10px;padding:2px 8px;background:var(--roseL);border-radius:var(--r);cursor:pointer;color:var(--rose)" onclick="qPrendaById(${p.id})">✕ Quitar</span></div></div><div style="font-size:12px;font-weight:600;flex-shrink:0;font-family:var(--serif)">${p.precio>0?'$'+p.precio.toLocaleString('es-CL'):'<span style="color:var(--sage);font-size:10px">Propia</span>'}</div></div>`).join('');document.getElementById('outfit-total').textContent='$'+total.toLocaleString('es-CL');}
+function actualizarTallaManual(){const calzado=document.getElementById('edit-calzado')?.value;const pantalon=document.getElementById('edit-pantalon')?.value;const top=document.getElementById('edit-top')?.value;const vestido=document.getElementById('edit-vestido')?.value;if(calzado&&perfil.medidas)perfil.medidas.pie=calzado;if(calzado&&perfil.tallas)perfil.tallas.zapatillas=calzado+' CL';if(pantalon&&perfil.tallas)perfil.tallas.pantalon=pantalon+' CL';if(top&&perfil.tallas)perfil.talla_principal=top;if(vestido&&perfil.tallas)perfil.tallas.chile=vestido;document.getElementById('talla-badge').textContent='Talla: '+perfil.talla_principal;document.getElementById('ub').textContent=userData.nombre.split(' ')[0]+' · '+perfil.talla_principal;}
+
+// ══ ANÁLISIS DE PRENDA CON IA (NUEVO) ═══════════════════════════════════════
+async function analizarPrenda(imgSrc) {
+  let b64, mime;
+  try {
+    let dataUrl = imgSrc;
+    if (!imgSrc.startsWith('data:')) {
+      dataUrl = await imgToBase64Url(imgSrc);
+    }
+    mime = dataUrl.split(';')[0].split(':')[1] || 'image/jpeg';
+    b64 = dataUrl.split(',')[1];
+    if (!b64) throw new Error('no b64');
+  } catch(e) {
+    return { apta: true, needsBgRemoval: false, mensaje: null };
+  }
+
+  const prompt = `Analiza esta imagen de prenda de ropa para virtual try-on.
+Responde SOLO JSON válido:
+{"tipo":"top|pants|jacket|shoes|acc","color":"color principal","fondo_limpio":true,"prenda_visible":true,"calidad":85,"necesita_recorte":false,"problema":null,"sugerencia":null}
+fondo_limpio=true si el fondo es blanco, transparente o neutro.
+necesita_recorte=true si el fondo tiene personas, escenas, colores intensos o texturas que puedan confundir a la IA de try-on.`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 200,
+        messages: [{ role: 'user', content: [
+          { type: 'image', source: { type: 'base64', media_type: mime, data: b64 } },
+          { type: 'text', text: prompt }
+        ]}]
+      })
+    });
+    const data = await resp.json();
+    const txt = data.content?.map(b => b.text || '').join('') || '';
+    const result = JSON.parse(txt.replace(/```json|```/g, '').trim());
+    return {
+      apta: result.prenda_visible !== false,
+      needsBgRemoval: result.necesita_recorte === true,
+      calidad: result.calidad || 80,
+      problema: result.problema,
+      mensaje: result.necesita_recorte
+        ? '🔧 Fondo detectado — eliminando automáticamente para mejor resultado'
+        : result.calidad >= 75
+        ? `✓ Imagen óptima (calidad ${result.calidad}/100)`
+        : `⚠ Calidad ${result.calidad}/100 — puede afectar el resultado`
+    };
+  } catch(e) {
+    return { apta: true, needsBgRemoval: false, mensaje: null };
+  }
+}
+
+function setGAB(tipo, texto) {
+  const el = document.getElementById('gab-msg');
+  const txtEl = document.getElementById('gab-txt');
+  if (!el || !txtEl) return;
+  el.className = 'gab gab-' + tipo;
+  txtEl.textContent = texto;
+}
+
+// ══ TRY-ON (ACTUALIZADO CON ANÁLISIS DE PRENDA) ════════════════════════════
+function resetTryOn(){document.getElementById('tryon-res').style.display='none';document.getElementById('tryon-err').style.display='none';document.getElementById('tryon-analisis').style.display='none';document.getElementById('tryon-sel').style.display='block';document.getElementById('reaccion-resp').style.display='none';const b=document.getElementById('bg-removed-badge');if(b)b.style.display='none';}
+
+function iniciarTryOn(){
+  const prendas=Object.values(outfit).filter(Boolean);
+  if(!window._foto||prendas.length===0)return;
+  const panel=document.getElementById('tryon-panel');panel.style.display='block';
+  panel.scrollIntoView({behavior:'smooth',block:'nearest'});
+  document.getElementById('tryon-load').style.display='none';
+  document.getElementById('tryon-res').style.display='none';
+  document.getElementById('tryon-err').style.display='none';
+  document.getElementById('tryon-analisis').style.display='none';
+  document.getElementById('tryon-sel').style.display='block';
+  const tl={top:'Top / Polera',pants:'Pantalón',shoes:'Calzado',jacket:'Chaqueta',acc:'Accesorio'};
+  document.getElementById('tryon-btns').innerHTML=prendas.map(p=>`
+    <button onclick="ejecutarTryOn(${p.id})" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--ashDD);border-radius:var(--r2);background:var(--white);cursor:pointer;text-align:left;width:100%;font-family:var(--sans);transition:border-color .2s" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--ashDD)'">
+      <img src="${p.img}" style="width:44px;height:44px;border-radius:var(--r);object-fit:cover;flex-shrink:0" onerror="this.style.display='none'">
+      <div style="flex:1"><div style="font-size:12.5px;font-weight:500">${p.nombre}</div><div style="font-size:10.5px;color:var(--fog);margin-top:2px">${tl[p.tipo]||p.tipo}</div></div>
+      <span style="font-size:16px;color:var(--fog)">→</span>
+    </button>`).join('');
+}
+
+async function imgToBase64Url(src){
+  if(src.startsWith('data:'))return src;
+  return new Promise((res)=>{
+    const img=new Image();img.crossOrigin='anonymous';
+    img.onload=()=>{const c=document.createElement('canvas');c.width=img.width;c.height=img.height;c.getContext('2d').drawImage(img,0,0);res(c.toDataURL('image/jpeg',0.9));};
+    img.onerror=()=>res(src);
+    img.src=src;
+  });
+}
+
+async function ejecutarTryOn(prendaId) {
+  const prenda = cat.find(p=>p.id===prendaId) || misPrendas.find(p=>p.id===prendaId);
+  if (!prenda || !window._foto) return;
+  window._tryonPrendaNombre = prenda.nombre;
+
+  // ── FASE 1: Análisis de prenda ──
+  document.getElementById('tryon-sel').style.display = 'none';
+  document.getElementById('tryon-analisis').style.display = 'block';
+  document.getElementById('tryon-load').style.display = 'none';
+  document.getElementById('tryon-res').style.display = 'none';
+  document.getElementById('tryon-err').style.display = 'none';
+  setGAB('proc', '🔍 Analizando imagen de prenda con IA...');
+
+  const prendaB64 = await imgToBase64Url(prenda.img);
+  const analisis = await analizarPrenda(prendaB64);
+
+  if (analisis.mensaje) {
+    const tipo = analisis.needsBgRemoval ? 'warn' : analisis.calidad >= 75 ? 'ok' : 'warn';
+    setGAB(tipo, analisis.mensaje);
+    await delay(1200);
+  }
+
+  if (analisis.needsBgRemoval) {
+    setGAB('proc', '✂️ Eliminando fondo de la prenda...');
+    await delay(600);
+  }
+
+  // ── FASE 2: Try-On ──
+  document.getElementById('tryon-analisis').style.display = 'none';
+  document.getElementById('tryon-load').style.display = 'block';
+
+  let prog = 0;
+  const bar = document.getElementById('tryon-bar');
+  const msgs = [
+    'Preparando imágenes...',
+    analisis.needsBgRemoval ? 'Eliminando fondo de prenda...' : 'Procesando prenda...',
+    'Analizando tu silueta...',
+    'Aplicando la prenda con IA...',
+    'Refinando detalles...',
+    'Casi listo...'
+  ];
+  let mi = 0;
+  const iv = setInterval(() => {
+    prog = Math.min(prog + 1, 90);
+    bar.style.width = prog + '%';
+    if (prog > mi * 15 && mi < msgs.length) {
+      document.getElementById('tryon-msg').textContent = msgs[mi++];
+    }
+  }, 500);
+
+  try {
+    const catMap = { top: 'tops', pants: 'bottoms', jacket: 'tops', shoes: 'auto', acc: 'auto' };
+    const resp = await fetch('/api/tryon', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        human_img: window._foto,
+        garm_img: prendaB64,
+        garment_des: prenda.nombre,
+        category: catMap[prenda.tipo] || 'auto',
+        needs_bg_removal: analisis.needsBgRemoval
+      })
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || 'HTTP ' + resp.status);
+
+    clearInterval(iv); bar.style.width = '100%';
+    await delay(300);
+
+    document.getElementById('tryon-load').style.display = 'none';
+    document.getElementById('tryon-res').style.display = 'block';
+    const imgEl = document.getElementById('tryon-img');
+    imgEl.src = data.output; imgEl.style.transform = 'scale(1)';
+    document.getElementById('tryon-dl').href = data.output;
+    document.getElementById('reaccion-resp').style.display = 'none';
+
+    // Mostrar badge si se eliminó el fondo
+    const bgBadge = document.getElementById('bg-removed-badge');
+    if (bgBadge) bgBadge.style.display = (data.bg_removed || analisis.needsBgRemoval) ? 'flex' : 'none';
+
+    document.getElementById('vistas-tabs').innerHTML = `
+      <button onclick="zoomVista2('full',this)" style="padding:6px 14px;background:var(--ink);color:var(--white);border:none;border-radius:2px;font-size:11px;font-weight:500;cursor:pointer;font-family:var(--sans);letter-spacing:.4px;white-space:nowrap">Completo</button>
+      <button onclick="zoomVista2('cara',this)" style="padding:6px 14px;background:var(--ash);color:var(--ink);border:1px solid var(--ashDD);border-radius:2px;font-size:11px;font-weight:500;cursor:pointer;font-family:var(--sans);letter-spacing:.4px;white-space:nowrap">Cara</button>
+      <button onclick="zoomVista2('torso',this)" style="padding:6px 14px;background:var(--ash);color:var(--ink);border:1px solid var(--ashDD);border-radius:2px;font-size:11px;font-weight:500;cursor:pointer;font-family:var(--sans);letter-spacing:.4px;white-space:nowrap">Torso</button>
+      <button onclick="zoomVista2('pies',this)" style="padding:6px 14px;background:var(--ash);color:var(--ink);border:1px solid var(--ashDD);border-radius:2px;font-size:11px;font-weight:500;cursor:pointer;font-family:var(--sans);letter-spacing:.4px;white-space:nowrap">Calzado</button>`;
+
+  } catch(err) {
+    clearInterval(iv);
+    document.getElementById('tryon-load').style.display = 'none';
+    document.getElementById('tryon-sel').style.display = 'block';
+    const el = document.getElementById('tryon-err'); el.style.display = 'block';
+    if (err.message.includes('401') || err.message.includes('403'))
+      el.innerHTML = 'API Key incorrecta. Verifica la configuración en Vercel.';
+    else if (err.message.includes('402'))
+      el.innerHTML = 'Sin créditos en FASHN.ai. Recarga en <a href="https://app.fashn.ai" target="_blank" style="color:var(--rose)">app.fashn.ai →</a>';
+    else
+      el.innerHTML = 'Error: ' + err.message;
+  }
+}
+
+function zoomVista2(zona,btn){
+  const img=document.getElementById('tryon-img');
+  const configs={full:{transform:'scale(1)',origin:'top center'},cara:{transform:'scale(2.4)',origin:'15% top'},torso:{transform:'scale(1.9)',origin:'center 35%'},pies:{transform:'scale(2.2)',origin:'center bottom'}};
+  const cfg=configs[zona]||configs.full;
+  img.style.transformOrigin=cfg.origin;img.style.transform=cfg.transform;
+  document.querySelectorAll('#vistas-tabs button').forEach(b=>{b.style.background='var(--ash)';b.style.color='var(--ink)';b.style.border='1px solid var(--ashDD)';});
+  if(btn){btn.style.background='var(--ink)';btn.style.color='var(--white)';btn.style.border='none';}
+}
+
+async function reaccionTryOn(tipo){
+  const el=document.getElementById('reaccion-resp');el.style.display='block';el.innerHTML='El estilista está respondiendo...';
+  const prendaNombre=window._tryonPrendaNombre||'esta prenda';
+  const gl=gender==='mujer'?'mujer':gender==='hombre'?'hombre':'persona';
+  const prompt=`Eres el estilista de FitMe. El cliente es ${gl}, talla ${perfil.talla_principal||''}, morfología ${perfil.morfologia?.tipo||''}. Se probó "${prendaNombre}" y dice: "${tipo}". Responde en 2-3 líneas, empático, con un consejo concreto. Sin emojis.`;
+  try{const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:200,messages:[{role:'user',content:prompt}]})});const d=await r.json();el.innerHTML=d.content.map(b=>b.text||'').join('').trim();}catch(e){el.innerHTML='No se pudo conectar con el estilista.';}
+}
+
+// ══ SUBIR PRENDA ══
+function subirPrenda(input){const file=input.files[0];if(!file)return;const r=new FileReader();r.onload=e=>{subB64=e.target.result;document.getElementById('prenda-prev').src=e.target.result;document.getElementById('prenda-nombre').value='';subTipo='top';document.querySelectorAll('#tipo-grid .cc').forEach(b=>b.classList.remove('on'));document.querySelectorAll('#tipo-grid .cc')[0].classList.add('on');document.getElementById('modal-prenda').classList.add('show');};r.readAsDataURL(file);input.value='';}
+function selTipo(el,tipo){document.querySelectorAll('#tipo-grid .cc').forEach(b=>b.classList.remove('on'));el.classList.add('on');subTipo=tipo;}
+function confirmarPrenda(){const nombre=document.getElementById('prenda-nombre').value.trim()||'Mi prenda';const tipo=subTipo==='vestido'?'top':subTipo;const catN={top:'poleras',pants:'pantalones',shoes:'calzado',jacket:'chaquetas',acc:'accesorios',vestido:'vestidos'}[subTipo]||'poleras';const id=10000+misPrendas.length;const p={id,nombre,cat:catN,tipo,emoji:'📸',img:subB64,bg:'#F0F0F0',precio:0,marca:'Mi guardarropa',tags:nombre.toLowerCase(),esMia:true};misPrendas.push(p);cat.push(p);closeModal('modal-prenda');curSlot=tipo;ponerPrenda(p,tipo);goPage('espejo');}
+
+// ══ ARMARIO ACCESORIOS ══
+let accGen='mujer',accSub='todos';
+const subLbl={reloj:'⌚ Relojes',cadena:'📿 Cadenas',pulsera:'🪬 Pulseras',cinturon:'🪢 Cinturones',maletin:'💼 Maletines',mochila:'🎒 Mochilas',corbata:'👔 Corbatas',pisacorbata:'📎 Pisacorbatas',cartera:'👛 Carteras',bolso:'👜 Bolsos',collar:'📿 Collares',turbante:'🧣 Turbantes',gafas:'🕶️ Gafas',gorro:'🧢 Gorros',bufanda:'🧣 Bufandas'};
+function openArmario(){accGen=gender==='hombre'?'hombre':gender==='otro'?'unisex':'mujer';document.querySelectorAll('#acc-gen-tabs .at').forEach(t=>{const g=t.getAttribute('onclick').match(/'(\w+)'/)[1];t.classList.toggle('on',g===accGen);});accSub='todos';renderAccSubcats();renderArmarioGrid();document.getElementById('modal-armario').classList.add('show');}
+function filtArmario(el,g){accGen=g;accSub='todos';document.querySelectorAll('#acc-gen-tabs .at').forEach(t=>t.classList.remove('on'));el.classList.add('on');renderAccSubcats();renderArmarioGrid();}
+function filtSubcat(el,s){accSub=s;document.querySelectorAll('#acc-sub-tabs .as').forEach(t=>t.classList.remove('on'));el.classList.add('on');renderArmarioGrid();}
+function renderAccSubcats(){const items=cat.filter(p=>p.cat==='accesorios'&&(p.genero===accGen||p.genero==='unisex'&&accGen==='unisex'));const subs=[...new Set(items.map(p=>p.subcat).filter(Boolean))];document.getElementById('acc-sub-tabs').innerHTML='<button class="as on" onclick="filtSubcat(this,\'todos\')">Todos</button>'+subs.map(s=>`<button class="as" onclick="filtSubcat(this,'${s}')">${subLbl[s]||s}</button>`).join('');}
+function renderArmarioGrid(){let items=cat.filter(p=>p.cat==='accesorios'&&(p.genero===accGen||!p.genero));if(accSub!=='todos')items=items.filter(p=>p.subcat===accSub);const mias=misPrendas.filter(p=>p.tipo==='acc');if(mias.length>0)items=[...mias,...items];const grid=document.getElementById('armario-grid');if(items.length===0){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:24px;color:var(--fog)">Sin accesorios. Sube los tuyos con 📸</div>';return;}grid.innerHTML=items.map(p=>`<div onclick="elegirAcc(${p.id})" style="border:1.5px solid var(--ashDD);border-radius:var(--r3);overflow:hidden;cursor:pointer;background:#fff;transition:border-color .2s" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--ashDD)'"><div style="height:120px;background:${p.bg};display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative"><img src="${p.img}" loading="lazy" style="width:100%;height:100%;object-fit:${p.esMia?'contain':'cover'}" onerror="this.style.display='none';this.parentElement.innerHTML+='<span style=\'font-size:44px\'>${p.emoji}</span>'">${p.subcat?`<span style="position:absolute;bottom:5px;left:5px;background:rgba(0,0,0,.5);color:#fff;font-size:9px;font-weight:500;padding:2px 7px;border-radius:4px;letter-spacing:.3px">${subLbl[p.subcat]||p.subcat}</span>`:''}</div><div style="padding:8px 10px"><div style="font-size:11px;font-weight:500;line-height:1.3">${p.nombre}</div><div style="font-size:10px;color:var(--fog);margin-top:1px">${p.marca||''}</div><div style="font-family:var(--serif);font-size:13px;font-weight:400;color:var(--goldD);margin-top:4px">${p.precio>0?'$'+p.precio.toLocaleString('es-CL'):'<span style="color:var(--sage);font-size:10px">Propio</span>'}</div></div></div>`).join('');}
+function elegirAcc(id){const p=cat.find(x=>x.id===id)||misPrendas.find(x=>x.id===id);closeModal('modal-armario');curSlot='acc';if(p)ponerPrenda(p,'acc');}
+
+// ══ BUSCADOR ══
+function filtrarPrendas(){const q=document.getElementById('search-inp').value.toLowerCase();let items=cat.filter(p=>p.cat!=='accesorios'||!p.genero||p.genero===gender||p.genero==='unisex');if(actCat!=='todos')items=items.filter(p=>p.cat===actCat);if(q)items=items.filter(p=>p.tags.includes(q)||p.nombre.toLowerCase().includes(q)||(p.marca||'').toLowerCase().includes(q));if(hasPerfil&&getColorimetria()){const orden={favorable:0,neutro:1,desfavorable:2};items.sort((a,b)=>(orden[colorFavorable(a.color)||'neutro']||1)-(orden[colorFavorable(b.color)||'neutro']||1));}const c=getColorimetria();const badgeExtra=c?`<span style="font-size:10px;color:var(--sage);font-weight:500;letter-spacing:.3px">Temporada ${c.temporada} · ordenado por tu colorimetría</span>`:'';document.getElementById('res-count').textContent=items.length+' prendas';const badgeEl=document.getElementById('color-season-badge');if(badgeEl)badgeEl.innerHTML=badgeExtra;document.getElementById('prendas-grid').innerHTML=items.map(p=>`<div class="pc" onclick="agregarEspejo(${p.id})"><div class="pi" style="background:${p.bg}"><img src="${p.img}" loading="lazy" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.parentElement.style.background='${p.bg}';this.parentElement.innerHTML+='<span style=\'font-size:40px;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)\'>${p.emoji}</span>'">${hasPerfil&&colorFavorable(p.color)==='favorable'?'<span class="pbd" style="background:var(--sageL);color:var(--sage)">✓ Tu color</span>':hasPerfil&&colorFavorable(p.color)==='desfavorable'?'<span class="pbd" style="background:var(--roseL);color:var(--rose)">No favorece</span>':''}</div><div class="pb"><div class="pn">${p.nombre}</div><div class="ps">${p.marca||p.cat}</div><div class="pr">$${p.precio.toLocaleString('es-CL')}</div></div></div>`).join('');}
+function setCat(el,c){actCat=c;document.querySelectorAll('.cc').forEach(x=>x.classList.remove('on'));el.classList.add('on');filtrarPrendas();}
+function agregarEspejo(id){const p=cat.find(x=>x.id===id);if(!p)return;curSlot=p.tipo;ponerPrenda(p,p.tipo);goPage('espejo');}
+
+// ══ OUTFITS IA ══
+function initOutfits(){document.getElementById('oca-noperfil').style.display=hasPerfil?'none':'flex';document.getElementById('btn-generar').style.display=hasPerfil?'block':'none';}
+function selectOca(el,oca){document.querySelectorAll('#ocaGrid .oc').forEach(c=>c.classList.remove('on'));el.classList.add('on');ocaSel=oca;if(hasPerfil){document.getElementById('oca-noperfil').style.display='none';document.getElementById('btn-generar').style.display='block';}}
+async function generarOutfit(){if(!hasPerfil)return;document.getElementById('outfit-loading').style.display='block';document.getElementById('outfits-result').innerHTML='';const gl=gender==='mujer'?'mujer':gender==='hombre'?'hombre':'persona';const prompt=`Eres un estilista de moda experto. Crea exactamente 2 outfits completos para una persona de género ${gl}, para la ocasión: ${ocaSel}. Talla: ${perfil.talla_principal}. Morfología corporal: ${perfil.morfologia.tipo}. IMPORTANTE: SOLO sugiere prendas apropiadas para ${gl}. Responde ÚNICAMENTE con un array JSON válido, sin texto antes ni después, sin markdown: [{"nombre":"Nombre del outfit","descripcion":"Descripción breve","prendas":[{"nombre":"nombre prenda","tipo":"top","precio":25990,"color":"#185FA5"}],"total":75000,"tip":"Consejo de estilo"}]`;
+try{const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1200,messages:[{role:'user',content:prompt}]})});const data=await resp.json();if(data.error)throw new Error(data.error.message||'Error API');let txt=data.content.map(b=>b.text||'').join('').trim();const match=txt.match(/\[[\s\S]*\]/);if(!match)throw new Error('No se encontró JSON en la respuesta');const ois=JSON.parse(match[0]);document.getElementById('outfit-loading').style.display='none';document.getElementById('outfits-result').innerHTML=ois.map(o=>`<div class="ofc"><div class="ofh"><div><div style="font-size:14px;font-weight:600;font-family:var(--serif)">${o.nombre}</div><div style="font-size:12px;color:var(--fog);margin-top:3px">${o.descripcion}</div></div><span class="pill pv">${ocaSel}</span></div><div style="padding:12px 14px">${o.prendas.map(p=>`<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--ashD);font-size:12px"><div style="display:flex;gap:8px;align-items:center"><span style="width:10px;height:10px;border-radius:50%;background:${p.color||'#888'};display:inline-block;border:1px solid rgba(0,0,0,.1)"></span><span>${p.nombre}</span></div><span style="color:var(--fog)">$${(p.precio||0).toLocaleString('es-CL')}</span></div>`).join('')}${o.tip?`<div class="tip tt" style="margin-top:10px;margin-bottom:0"><span style="font-size:14px;flex-shrink:0">✨</span><p>${o.tip}</p></div>`:''}</div><div class="off"><div><div style="font-size:11px;color:var(--fog)">Total</div><div style="font-family:var(--serif);font-size:16px;font-weight:400">$${(o.total||0).toLocaleString('es-CL')}</div></div><div style="display:flex;gap:7px"><button class="bsm" style="background:var(--ash);color:var(--ink);border:1px solid var(--ashDD)" onclick="goPage('espejo')">Ir al espejo</button><button class="bsm" style="background:var(--ink);color:var(--white)">Comprar todo</button></div></div></div>`).join('');}catch(e){document.getElementById('outfit-loading').style.display='none';document.getElementById('outfits-result').innerHTML='<div class="tip tpk"><span style="font-size:16px;flex-shrink:0">❌</span><p>Error al generar outfits: '+e.message+'</p></div>';}}
+async function chatOut(){const inp=document.getElementById('inp-out');const msg=inp.value.trim();if(!msg)return;addMsg(msg,'user','chat-out');inp.value='';document.getElementById('btn-out').disabled=true;document.getElementById('ty-out').style.display='block';const gl=gender==='mujer'?'mujer':gender==='hombre'?'hombre':'persona';const sys=hasPerfil?`Estilista para ${gl}. Talla ${perfil.talla_principal}, morfología ${perfil.morfologia.tipo}. SOLO ropa para ${gl}. Máx 4 líneas.`:`Estilista de moda. Máx 4 líneas.`;try{const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:300,messages:[{role:'user',content:sys},{role:'assistant',content:'¡Hola! ¿Para qué ocasión necesitas vestirte?'},{role:'user',content:msg}]})});const data=await resp.json();addMsg(data.content.map(b=>b.text||'').join('').trim(),'ai','chat-out');}catch(e){addMsg('Error de conexión.','ai','chat-out');}document.getElementById('ty-out').style.display='none';document.getElementById('btn-out').disabled=false;}
+
+// ══ HOME CARD ══
+function updateHomeCard(){const el=document.getElementById('homeCard');if(!hasPerfil){el.innerHTML='';return;}el.innerHTML=`<div style="background:var(--ink2);border-radius:var(--r3);padding:16px 18px;margin-bottom:12px;display:flex;align-items:center;gap:14px;border:1px solid rgba(201,168,76,.15)"><div style="width:44px;height:44px;border-radius:50%;border:1px solid rgba(201,168,76,.35);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:16px;color:var(--gold)">${userData.nombre.slice(0,2).toUpperCase()}</div><div><div style="font-size:13px;font-weight:500;color:var(--white);letter-spacing:.3px">${userData.nombre}</div><div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:2px;letter-spacing:.3px">Talla ${perfil.talla_principal} · ${perfil.morfologia.tipo}</div></div><span class="pill pv" style="margin-left:auto">Activo</span></div>`;}
+</script>
+</body>
+</html>
