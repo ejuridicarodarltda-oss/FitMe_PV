@@ -10,12 +10,11 @@ export default async function handler(req, res) {
     const fashnKey = process.env.FASHN_KEY;
     const replicateKey = process.env.REPLICATE_KEY;
 
-    let finalGarmImg = garm_img;
-
-    // ── PASO 1: Eliminar fondo con Replicate rembg si es necesario ──
-    if (needs_bg_removal && replicateKey) {
+    // ── Función reutilizable para quitar fondo ──
+    async function removeBackground(imageData) {
+      if (!replicateKey) return imageData;
       try {
-        const rembgResp = await fetch('https://api.replicate.com/v1/predictions', {
+        const resp = await fetch('https://api.replicate.com/v1/predictions', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -23,12 +22,11 @@ export default async function handler(req, res) {
           },
           body: JSON.stringify({
             version: 'fb8af171cfa1616ddcf1242c093f9c46bcada5ad4cf6f2fbe8b81b330ec5c003',
-            input: { image: garm_img }
+            input: { image: imageData }
           })
         });
-        const rembgData = await rembgResp.json();
-        const predId = rembgData.id;
-
+        const data = await resp.json();
+        const predId = data.id;
         for (let i = 0; i < 30; i++) {
           await new Promise(r => setTimeout(r, 1000));
           const poll = await fetch('https://api.replicate.com/v1/predictions/' + predId, {
@@ -36,21 +34,33 @@ export default async function handler(req, res) {
           });
           const pollData = await poll.json();
           if (pollData.status === 'succeeded' && pollData.output) {
-            finalGarmImg = pollData.output;
-            console.log('✓ Fondo eliminado con rembg');
-            break;
+            console.log('✓ Fondo eliminado');
+            return pollData.output;
           }
           if (pollData.status === 'failed') {
-            console.error('rembg falló:', pollData.error);
-            break;
+            console.error('rembg falló');
+            return imageData;
           }
         }
+        return imageData;
       } catch (e) {
-        console.error('rembg error (continuando sin limpieza):', e.message);
+        console.error('rembg error:', e.message);
+        return imageData;
       }
     }
 
-    // ── PASO 2: Try-On con Fashn.ai ──
+    // ── PASO 1: Quitar fondo de la foto de la PERSONA siempre ──
+    console.log('Quitando fondo de foto persona...');
+    const finalHumanImg = await removeBackground(human_img);
+
+    // ── PASO 2: Quitar fondo de la PRENDA si es necesario ──
+    let finalGarmImg = garm_img;
+    if (needs_bg_removal) {
+      console.log('Quitando fondo de prenda...');
+      finalGarmImg = await removeBackground(garm_img);
+    }
+
+    // ── PASO 3: Try-On con Fashn.ai ──
     const run = await fetch('https://api.fashn.ai/v1/run', {
       method: 'POST',
       headers: {
@@ -60,7 +70,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model_name: 'tryon-v1.6',
         inputs: {
-          model_image: human_img,
+          model_image: finalHumanImg,
           garment_image: finalGarmImg,
           category: category || 'auto',
           mode: 'balanced',
@@ -82,7 +92,7 @@ export default async function handler(req, res) {
       if (pollData.status === 'completed' && pollData.output?.[0]) {
         return res.status(200).json({
           output: pollData.output[0],
-          bg_removed: finalGarmImg !== garm_img
+          bg_removed: true
         });
       }
       if (pollData.status === 'failed') {
