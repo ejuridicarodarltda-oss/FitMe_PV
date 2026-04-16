@@ -1966,9 +1966,9 @@ let admImgB64 = null;
 
 async function admIniciar() {
   try {
-    const r = await window.storage.get('admin-catalogo');
-    if (r && r.value) {
-      admPrendas = JSON.parse(r.value);
+    const raw = localStorage.getItem('fitme_admin_catalogo');
+    if (raw) {
+      admPrendas = JSON.parse(raw);
       admPrendas.forEach(p => { if (!cat.find(x => x.id === p.id)) cat.push(p); });
       admRenderGrid();
     }
@@ -1976,8 +1976,16 @@ async function admIniciar() {
 }
 
 async function admPersistir() {
-  try { await window.storage.set('admin-catalogo', JSON.stringify(admPrendas)); }
-  catch(e) { console.error('Error guardando catálogo admin', e); }
+  try {
+    localStorage.setItem('fitme_admin_catalogo', JSON.stringify(admPrendas));
+  } catch(e) {
+    console.error('Error guardando catálogo admin', e);
+    // Si localStorage está lleno (imágenes pesadas), guardar solo metadatos sin img
+    try {
+      const livianas = admPrendas.map(p => ({...p, img: p.img.startsWith('data:') ? p._imgUrl || '' : p.img}));
+      localStorage.setItem('fitme_admin_catalogo', JSON.stringify(livianas));
+    } catch(e2) { console.error('No se pudo guardar ni versión liviana', e2); }
+  }
 }
 
 // Carga imagen, la comprime si es necesaria y muestra preview inmediato
@@ -2085,6 +2093,14 @@ async function admGuardar() {
     genero: document.getElementById('adm-genero').value || undefined,
     esAdmin: true
   };
+
+  // Verificar si la imagen cabe en localStorage (max ~4MB)
+  const totalActual = JSON.stringify(admPrendas).length;
+  const nuevaImg = admImgB64 ? admImgB64.length : 0;
+  if (totalActual + nuevaImg > 3500000) {
+    admMsg('⚠ Almacenamiento casi lleno. Usa imágenes más pequeñas o elimina prendas antiguas.', 'err');
+    return;
+  }
 
   cat.push(p);
   admPrendas.push(p);
