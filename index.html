@@ -311,6 +311,10 @@ svg{display:block;}
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6L12 2z" stroke="white" stroke-width="1.5" stroke-linejoin="round"/></svg>
     <span>Outfits</span>
   </button>
+  <button class="nt" onclick="goPage('admin')" id="nav-admin">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1.5" stroke="white" stroke-width="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5" stroke="white" stroke-width="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5" stroke="white" stroke-width="1.5"/><path d="M14 17.5h7M17.5 14v7" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
+    <span>Admin</span>
+  </button>
 </div>
 
 <!-- INICIO -->
@@ -733,6 +737,113 @@ svg{display:block;}
   </div>
 </div>
 
+<!-- PANEL ADMIN -->
+<div class="pg" id="page-admin">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+    <div>
+      <div style="font-family:var(--serif);font-size:22px;font-weight:400">Panel Admin</div>
+      <div style="font-size:11px;color:var(--fog);margin-top:2px">Agrega ropa al catálogo sin tocar código</div>
+    </div>
+    <div style="background:var(--goldL);border:1px solid var(--gold);border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-size:20px">⚙️</div>
+  </div>
+
+  <!-- FORM -->
+  <div class="card">
+    <div class="ct">➕ Agregar nueva prenda</div>
+    <div class="cs">Completa los datos y la prenda quedará disponible en el catálogo para todos.</div>
+
+    <!-- Imagen -->
+    <div class="fg2">
+      <label class="fl">Imagen de la prenda</label>
+      <!-- Zona única: clic para subir, muestra preview inmediato -->
+      <div id="adm-img-zone" onclick="document.getElementById('adm-img-file').click()"
+        style="border:2px dashed var(--ashDD);border-radius:12px;overflow:hidden;cursor:pointer;background:var(--ash);transition:all .2s;position:relative;min-height:140px;display:flex;align-items:center;justify-content:center"
+        onmouseover="this.style.borderColor='var(--gold)';this.style.background='var(--goldL)'"
+        onmouseout="this.style.borderColor=admImgB64?'var(--sage)':'var(--ashDD)';this.style.background=admImgB64?'transparent':'var(--ash)'">
+
+        <!-- Estado vacío -->
+        <div id="adm-img-ph" style="text-align:center;padding:20px 10px">
+          <div style="font-size:36px;margin-bottom:8px">📸</div>
+          <div style="font-size:13px;font-weight:500;color:var(--ink)">Toca para seleccionar foto</div>
+          <div style="font-size:11px;color:var(--fog);margin-top:4px">JPG, PNG o WEBP · se guarda automáticamente</div>
+        </div>
+
+        <!-- Preview de la imagen cargada -->
+        <img id="adm-img-prev" style="display:none;width:100%;max-height:240px;object-fit:contain;display:none" alt="Preview prenda">
+
+        <!-- Badge de éxito -->
+        <div id="adm-img-badge" style="display:none;position:absolute;top:8px;right:8px;background:var(--sage);color:#fff;font-size:10px;font-weight:600;padding:3px 10px;border-radius:20px;letter-spacing:.3px">✓ Lista</div>
+
+        <!-- Botón cambiar (aparece cuando hay imagen) -->
+        <div id="adm-img-cambiar" style="display:none;position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.55);color:#fff;font-size:10px;font-weight:500;padding:5px 12px;border-radius:20px;letter-spacing:.3px">🔄 Cambiar</div>
+
+        <input type="file" id="adm-img-file" accept="image/*" style="display:none" onchange="admCargarImg(this)">
+      </div>
+      <div id="adm-img-size-warn" style="display:none;font-size:10px;color:var(--rose);margin-top:4px">⚠ Imagen muy grande — se comprimirá automáticamente</div>
+    </div>
+
+    <div class="fg2"><label class="fl">Nombre *</label><input class="fi2" id="adm-nombre" placeholder="Ej: Blazer cruzado negro"></div>
+
+    <div class="fr">
+      <div class="fg2">
+        <label class="fl">Categoría *</label>
+        <select class="fi2" id="adm-cat" onchange="admCatChange()">
+          <option value="">Seleccionar...</option>
+          <option value="poleras">Poleras / Tops</option>
+          <option value="pantalones">Pantalones</option>
+          <option value="vestidos">Vestidos</option>
+          <option value="chaquetas">Chaquetas</option>
+          <option value="calzado">Calzado</option>
+          <option value="accesorios">Accesorios</option>
+        </select>
+      </div>
+      <div class="fg2">
+        <label class="fl">Tipo interno *</label>
+        <select class="fi2" id="adm-tipo">
+          <option value="top">top</option>
+          <option value="pants">pants</option>
+          <option value="jacket">jacket</option>
+          <option value="shoes">shoes</option>
+          <option value="acc">acc</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="fr">
+      <div class="fg2"><label class="fl">Color principal</label><input class="fi2" id="adm-color" placeholder="negro, blanco..."></div>
+      <div class="fg2"><label class="fl">Marca</label><input class="fi2" id="adm-marca" placeholder="Zara, H&amp;M..."></div>
+    </div>
+
+    <div class="fr">
+      <div class="fg2"><label class="fl">Precio (CLP)</label><input class="fi2" id="adm-precio" type="number" placeholder="29990"></div>
+      <div class="fg2">
+        <label class="fl">Género</label>
+        <select class="fi2" id="adm-genero">
+          <option value="">Todos</option>
+          <option value="mujer">Mujer</option>
+          <option value="hombre">Hombre</option>
+          <option value="unisex">Unisex</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="fg2"><label class="fl">Tags (palabras clave para búsqueda)</label><input class="fi2" id="adm-tags" placeholder="blazer negro formal elegante"></div>
+
+    <button class="btn bp" onclick="admGuardar()" style="margin-top:4px">✓ Guardar en catálogo</button>
+    <div id="adm-msg" style="display:none;margin-top:10px;padding:10px 14px;border-radius:var(--r2);font-size:12px;font-weight:500"></div>
+  </div>
+
+  <!-- GRID PRENDAS ADMIN -->
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div class="ct" style="margin-bottom:0">📦 Prendas del catálogo admin</div>
+      <span id="adm-count" style="font-size:11px;color:var(--fog)">0 prendas</span>
+    </div>
+    <div id="adm-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px"></div>
+    <div id="adm-empty" style="text-align:center;padding:24px;color:var(--fog);font-size:13px;line-height:1.7">Aún no has agregado prendas.<br>¡Usa el formulario de arriba!</div>
+  </div>
+</div>
+
 <!-- MODAL SELECTOR PRENDA -->
 <div class="mbg" id="modal-sel">
   <div class="mo">
@@ -847,54 +958,129 @@ function getColorimetria(){const tez=userData.tez||'';const cab=userData.cabello
 function colorFavorable(colorPrenda){const c=getColorimetria();if(!c||!colorPrenda)return null;const cp=colorPrenda.toLowerCase();const esFav=c.favorables.some(f=>cp.includes(f)||f.includes(cp));const esDes=c.desfavorables.some(d=>cp.includes(d)||d.includes(cp));if(esFav)return'favorable';if(esDes)return'desfavorable';return'neutro';}
 
 const cat=[
-  // ── POLERAS / TOPS ──
-  {id:1,nombre:'Camiseta básica blanca cuello redondo',cat:'poleras',tipo:'top',color:'blanco',emoji:'👕',img:'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&q=80',bg:'#F7F5F2',precio:14990,marca:'Zara',tags:'polera camiseta blanca basica'},
-  {id:2,nombre:'Camiseta negra manga corta',cat:'poleras',tipo:'top',color:'negro',emoji:'👕',img:'https://images.unsplash.com/photo-1503341504253-dff4815485f1?w=400&q=80',bg:'#F1EFE8',precio:12990,marca:'H&M',tags:'polera camiseta negra'},
-  {id:3,nombre:'Blusa blanca cuello en V seda',cat:'poleras',tipo:'top',color:'blanco',emoji:'👚',img:'https://images.unsplash.com/photo-1564257631407-4deb1f99d992?w=400&q=80',bg:'#F7F5F2',precio:29990,marca:'Zara',tags:'blusa blanca seda formal'},
-  {id:4,nombre:'Camisa de rayas azul y blanco',cat:'poleras',tipo:'top',color:'azul',emoji:'👔',img:'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=400&q=80',bg:'#E6F1FB',precio:24990,marca:'H&M',tags:'camisa rayas azul blanco'},
-  {id:5,nombre:'Blusa rosa manga larga',cat:'poleras',tipo:'top',color:'rosa',emoji:'👚',img:'https://images.unsplash.com/photo-1485462537746-965f33f7f6a7?w=400&q=80',bg:'#FBEAF0',precio:19990,marca:'Zara',tags:'blusa rosa manga larga'},
-  {id:6,nombre:'Top negro sin mangas',cat:'poleras',tipo:'top',color:'negro',emoji:'🖤',img:'https://images.unsplash.com/photo-1583744946564-b52ac1c389c8?w=400&q=80',bg:'#F1EFE8',precio:15990,marca:'H&M',tags:'top negro sin mangas'},
-  {id:7,nombre:'Camisa beige oversize',cat:'poleras',tipo:'top',color:'beige',emoji:'👔',img:'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=400&q=80',bg:'#FAEEDA',precio:22990,marca:'Zara',tags:'camisa beige oversize casual'},
-  {id:8,nombre:'Camiseta gris manga larga',cat:'poleras',tipo:'top',color:'gris',emoji:'👕',img:'https://images.unsplash.com/photo-1516826957135-700dedea698c?w=400&q=80',bg:'#F3F4F6',precio:13990,marca:'H&M',tags:'camiseta gris manga larga'},
-  // ── PANTALONES ──
-  {id:9,nombre:'Jean azul slim fit',cat:'pantalones',tipo:'pants',color:'azul',emoji:'👖',img:'https://images.unsplash.com/photo-1542272604-787c3835535d?w=400&q=80',bg:'#E6F1FB',precio:34990,marca:"Zara",tags:'jean azul slim'},
-  {id:10,nombre:'Pantalón negro de vestir',cat:'pantalones',tipo:'pants',color:'negro',emoji:'👖',img:'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=400&q=80',bg:'#F1EFE8',precio:39990,marca:'H&M',tags:'pantalon negro vestir formal'},
-  {id:11,nombre:'Pantalón beige tiro alto',cat:'pantalones',tipo:'pants',color:'beige',emoji:'👖',img:'https://images.unsplash.com/photo-1594938298603-c8148c4b984f?w=400&q=80',bg:'#FAEEDA',precio:32990,marca:'Zara',tags:'pantalon beige tiro alto'},
-  {id:12,nombre:'Jean blanco recto',cat:'pantalones',tipo:'pants',color:'blanco',emoji:'👖',img:'https://images.unsplash.com/photo-1604176354204-9268737828e4?w=400&q=80',bg:'#F7F5F2',precio:27990,marca:'H&M',tags:'jean blanco recto'},
-  {id:13,nombre:'Pantalón verde oliva cargo',cat:'pantalones',tipo:'pants',color:'verde',emoji:'👖',img:'https://images.unsplash.com/photo-1548883354-94bcfe321cbb?w=400&q=80',bg:'#EAF3DE',precio:36990,marca:'Zara',tags:'pantalon verde oliva cargo'},
-  // ── VESTIDOS ──
-  {id:14,nombre:'Vestido negro midi elegante',cat:'vestidos',tipo:'top',color:'negro',emoji:'👗',img:'https://images.unsplash.com/photo-1539008835657-9e8e9680c956?w=400&q=80',bg:'#F1EFE8',precio:49990,marca:'Zara',tags:'vestido negro midi elegante'},
-  {id:15,nombre:'Vestido blanco manga larga',cat:'vestidos',tipo:'top',color:'blanco',emoji:'👗',img:'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=400&q=80',bg:'#F7F5F2',precio:44990,marca:'H&M',tags:'vestido blanco manga larga'},
-  {id:16,nombre:'Vestido azul marino casual',cat:'vestidos',tipo:'top',color:'azul marino',emoji:'👗',img:'https://images.unsplash.com/photo-1623609163859-ca93c959b98a?w=400&q=80',bg:'#E6F1FB',precio:38990,marca:'Zara',tags:'vestido azul marino casual'},
-  {id:17,nombre:'Vestido lino beige verano',cat:'vestidos',tipo:'top',color:'beige',emoji:'👗',img:'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=400&q=80',bg:'#FAEEDA',precio:34990,marca:'H&M',tags:'vestido lino beige verano'},
-  // ── CHAQUETAS ──
-  {id:18,nombre:'Blazer negro estructurado',cat:'chaquetas',tipo:'jacket',color:'negro',emoji:'🧥',img:'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=400&q=80',bg:'#F1EFE8',precio:59990,marca:'Zara',tags:'blazer negro estructurado formal'},
-  {id:19,nombre:'Chaqueta beige oversize',cat:'chaquetas',tipo:'jacket',color:'beige',emoji:'🧥',img:'https://images.unsplash.com/photo-1548126032-079a0fb0099d?w=400&q=80',bg:'#FAEEDA',precio:54990,marca:'H&M',tags:'chaqueta beige oversize casual'},
-  {id:20,nombre:'Blazer azul marino',cat:'chaquetas',tipo:'jacket',color:'azul marino',emoji:'🧥',img:'https://images.unsplash.com/photo-1617137968427-85924c800a22?w=400&q=80',bg:'#E6F1FB',precio:64990,marca:'Zara',tags:'blazer azul marino formal'},
-  {id:21,nombre:'Chaqueta cuero negro',cat:'chaquetas',tipo:'jacket',color:'negro',emoji:'🧥',img:'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400&q=80',bg:'#F1EFE8',precio:89990,marca:'H&M',tags:'chaqueta cuero negro moto'},
-  // ── CALZADO ──
-  {id:22,nombre:'Zapatillas blancas clásicas',cat:'calzado',tipo:'shoes',color:'blanco',emoji:'👟',img:'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&q=80',bg:'#F7F5F2',precio:39990,marca:'Zara',tags:'zapatillas blancas clasicas'},
-  {id:23,nombre:'Zapatos negros taco bajo',cat:'calzado',tipo:'shoes',color:'negro',emoji:'👠',img:'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=400&q=80',bg:'#F1EFE8',precio:44990,marca:'H&M',tags:'zapatos negros taco bajo formal'},
-  {id:24,nombre:'Botines café caña alta',cat:'calzado',tipo:'shoes',color:'café',emoji:'👢',img:'https://images.unsplash.com/photo-1605812860427-4024433a70fd?w=400&q=80',bg:'#FAEEDA',precio:59990,marca:'Zara',tags:'botines cafe caña alta'},
-  {id:25,nombre:'Zapatillas running negras',cat:'calzado',tipo:'shoes',color:'negro',emoji:'👟',img:'https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=400&q=80',bg:'#F1EFE8',precio:79990,marca:'H&M',tags:'zapatillas running negras deporte'},
-  {id:26,nombre:'Sandalias beige planas',cat:'calzado',tipo:'shoes',color:'beige',emoji:'🩴',img:'https://images.unsplash.com/photo-1603487742131-4160ec999306?w=400&q=80',bg:'#FAEEDA',precio:29990,marca:'Zara',tags:'sandalias beige planas verano'},
-  // ── ACCESORIOS MUJER ──
-  {id:201,nombre:'Bolso negro mini cuero',cat:'accesorios',tipo:'acc',subcat:'cartera',genero:'mujer',emoji:'👛',img:'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=400&q=80',bg:'#F1EFE8',precio:39990,marca:'Zara',tags:'bolso negro mini cuero mujer'},
-  {id:202,nombre:'Bolso tote blanco lona',cat:'accesorios',tipo:'acc',subcat:'bolso',genero:'mujer',emoji:'🛍️',img:'https://images.unsplash.com/photo-1591561954557-26941169b49e?w=400&q=80',bg:'#F7F5F2',precio:29990,marca:'H&M',tags:'bolso tote blanco lona mujer'},
-  {id:203,nombre:'Collar dorado minimalista',cat:'accesorios',tipo:'acc',subcat:'collar',genero:'mujer',emoji:'📿',img:'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=400&q=80',bg:'#FEF3C7',precio:15990,marca:'Zara',tags:'collar dorado minimalista mujer'},
-  {id:204,nombre:'Cinturón negro fino',cat:'accesorios',tipo:'acc',subcat:'cinturon',genero:'mujer',emoji:'🪢',img:'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&q=80',bg:'#F1EFE8',precio:12990,marca:'H&M',tags:'cinturon negro fino mujer'},
-  {id:207,nombre:'Reloj dorado minimalista',cat:'accesorios',tipo:'acc',subcat:'reloj',genero:'mujer',emoji:'⌚',img:'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&q=80',bg:'#FEF3C7',precio:49990,marca:'Zara',tags:'reloj dorado minimalista mujer'},
-  // ── ACCESORIOS HOMBRE ──
-  {id:101,nombre:'Reloj negro deportivo',cat:'accesorios',tipo:'acc',subcat:'reloj',genero:'hombre',emoji:'⌚',img:'https://images.unsplash.com/photo-1542496658-e33a6d0d4a27?w=400&q=80',bg:'#F1EFE8',precio:89990,marca:'H&M',tags:'reloj negro deportivo hombre'},
-  {id:104,nombre:'Cinturón cuero marrón',cat:'accesorios',tipo:'acc',subcat:'cinturon',genero:'hombre',emoji:'🪢',img:'https://images.unsplash.com/photo-1624222247344-550fb60fe8ff?w=400&q=80',bg:'#FAEEDA',precio:24990,marca:'Zara',tags:'cinturon cuero marron hombre'},
-  {id:106,nombre:'Mochila negra urbana',cat:'accesorios',tipo:'acc',subcat:'mochila',genero:'hombre',emoji:'🎒',img:'https://images.unsplash.com/photo-1553062407-98eeb64c6a45?w=400&q=80',bg:'#F1EFE8',precio:49990,marca:'H&M',tags:'mochila negra urbana hombre'},
-  // ── ACCESORIOS UNISEX ──
-  {id:301,nombre:'Gafas de sol negras',cat:'accesorios',tipo:'acc',subcat:'gafas',genero:'unisex',emoji:'🕶️',img:'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=400&q=80',bg:'#F1EFE8',precio:19990,marca:'Zara',tags:'gafas sol negras unisex'},
-  {id:302,nombre:'Gorro lana gris',cat:'accesorios',tipo:'acc',subcat:'gorro',genero:'unisex',emoji:'🧢',img:'https://images.unsplash.com/photo-1576871337622-98d48d1cf531?w=400&q=80',bg:'#F3F4F6',precio:12990,marca:'H&M',tags:'gorro lana gris unisex'},
-  {id:303,nombre:'Bufanda beige lana',cat:'accesorios',tipo:'acc',subcat:'bufanda',genero:'unisex',emoji:'🧣',img:'https://images.unsplash.com/photo-1520903920243-00d872a2d1c9?w=400&q=80',bg:'#FAEEDA',precio:16990,marca:'Zara',tags:'bufanda beige lana unisex'}
+  // ══ POLERAS / TOPS MUJER ══
+  {id:1,nombre:'Camiseta básica blanca cuello redondo',cat:'poleras',tipo:'top',color:'blanco',emoji:'👕',img:'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&q=80',bg:'#F7F5F2',precio:14990,marca:'Zara',tags:'polera camiseta blanca basica zara'},
+  {id:2,nombre:'Camiseta negra manga corta',cat:'poleras',tipo:'top',color:'negro',emoji:'👕',img:'https://images.unsplash.com/photo-1503341504253-dff4815485f1?w=400&q=80',bg:'#F1EFE8',precio:12990,marca:'H&M',tags:'polera camiseta negra hm'},
+  {id:3,nombre:'Blusa blanca cuello en V seda',cat:'poleras',tipo:'top',color:'blanco',emoji:'👚',img:'https://images.unsplash.com/photo-1564257631407-4deb1f99d992?w=400&q=80',bg:'#F7F5F2',precio:29990,marca:'Zara',tags:'blusa blanca seda formal zara'},
+  {id:4,nombre:'Camisa de rayas azul y blanco',cat:'poleras',tipo:'top',color:'azul',emoji:'👔',img:'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=400&q=80',bg:'#E6F1FB',precio:24990,marca:'H&M',tags:'camisa rayas azul blanco hm'},
+  {id:5,nombre:'Blusa rosa manga larga',cat:'poleras',tipo:'top',color:'rosa',emoji:'👚',img:'https://images.unsplash.com/photo-1485462537746-965f33f7f6a7?w=400&q=80',bg:'#FBEAF0',precio:19990,marca:'Zara',tags:'blusa rosa manga larga zara'},
+  {id:6,nombre:'Top negro sin mangas',cat:'poleras',tipo:'top',color:'negro',emoji:'🖤',img:'https://images.unsplash.com/photo-1583744946564-b52ac1c389c8?w=400&q=80',bg:'#F1EFE8',precio:15990,marca:'H&M',tags:'top negro sin mangas hm'},
+  {id:7,nombre:'Camisa beige oversize',cat:'poleras',tipo:'top',color:'beige',emoji:'👔',img:'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=400&q=80',bg:'#FAEEDA',precio:22990,marca:'Zara',tags:'camisa beige oversize casual zara'},
+  {id:8,nombre:'Camiseta gris manga larga',cat:'poleras',tipo:'top',color:'gris',emoji:'👕',img:'https://images.unsplash.com/photo-1516826957135-700dedea698c?w=400&q=80',bg:'#F3F4F6',precio:13990,marca:'H&M',tags:'camiseta gris manga larga hm'},
+  {id:27,nombre:'Blusa floral estampada multicolor',cat:'poleras',tipo:'top',color:'multicolor',emoji:'👚',img:'https://images.unsplash.com/photo-1612336307429-8a898d10e223?w=400&q=80',bg:'#FEF9E7',precio:27990,marca:'Falabella',tags:'blusa floral estampada colores falabella'},
+  {id:28,nombre:'Top crop blanco deportivo',cat:'poleras',tipo:'top',color:'blanco',emoji:'🤍',img:'https://images.unsplash.com/photo-1571945153237-4929e783af4a?w=400&q=80',bg:'#F7F5F2',precio:18990,marca:'Nike',tags:'top crop blanco deportivo nike sport'},
+  {id:29,nombre:'Camisa lino blanca italiana',cat:'poleras',tipo:'top',color:'blanco',emoji:'👔',img:'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&q=80',bg:'#F7F5F2',precio:44990,marca:'Massimo Dutti',tags:'camisa lino blanca italiana massimo dutti europea'},
+  {id:30,nombre:'Blusa off-shoulder terracota',cat:'poleras',tipo:'top',color:'terracota',emoji:'👚',img:'https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?w=400&q=80',bg:'#FAEEDA',precio:32990,marca:'Paris',tags:'blusa off shoulder terracota paris'},
+  {id:31,nombre:'Camisa cuadros escocesa roja',cat:'poleras',tipo:'top',color:'rojo',emoji:'👔',img:'https://images.unsplash.com/photo-1588359348347-9bc6cbbb689e?w=400&q=80',bg:'#FBEAE8',precio:29990,marca:'Falabella',tags:'camisa cuadros escocesa roja flannel falabella'},
+  {id:32,nombre:'Body negro manga larga',cat:'poleras',tipo:'top',color:'negro',emoji:'🖤',img:'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400&q=80',bg:'#F1EFE8',precio:21990,marca:'Zara',tags:'body negro manga larga zara'},
+  {id:33,nombre:'Blusa satinada dorada elegante',cat:'poleras',tipo:'top',color:'dorado',emoji:'✨',img:'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=400&q=80',bg:'#FEF3C7',precio:54990,marca:'Mango',tags:'blusa satinada dorada elegante mango europea'},
+  {id:34,nombre:'Top tejido crochet beige',cat:'poleras',tipo:'top',color:'beige',emoji:'🧶',img:'https://images.unsplash.com/photo-1594938298603-c8148c4b984f?w=400&q=80',bg:'#FAEEDA',precio:25990,marca:'Falabella',tags:'top tejido crochet beige verano falabella'},
+  {id:35,nombre:'Camiseta oversize grafiti urbana',cat:'poleras',tipo:'top',color:'negro',emoji:'👕',img:'https://images.unsplash.com/photo-1554568218-0f1715e72254?w=400&q=80',bg:'#F1EFE8',precio:19990,marca:'H&M',tags:'camiseta oversize grafica urbana streetwear hm'},
+  {id:36,nombre:'Blusa manga globo morada',cat:'poleras',tipo:'top',color:'morado',emoji:'💜',img:'https://images.unsplash.com/photo-1583744946564-b52ac1c389c8?w=400&q=80',bg:'#F3E8FF',precio:34990,marca:'Paris',tags:'blusa manga globo morada paris'},
+  {id:37,nombre:'Camisa oxford azul cielo hombre',cat:'poleras',tipo:'top',color:'azul',emoji:'👔',img:'https://images.unsplash.com/photo-1602810319250-a663f0af2f75?w=400&q=80',bg:'#E6F1FB',precio:34990,marca:'Falabella',tags:'camisa oxford azul cielo hombre falabella formal'},
+  {id:38,nombre:'Polo negro piqué hombre',cat:'poleras',tipo:'top',color:'negro',emoji:'👕',img:'https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=400&q=80',bg:'#F1EFE8',precio:27990,marca:'Lacoste',tags:'polo negro pique hombre lacoste'},
+  {id:39,nombre:'Camisa blanca manga larga hombre',cat:'poleras',tipo:'top',color:'blanco',emoji:'👔',img:'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&q=80',bg:'#F7F5F2',precio:39990,marca:'Massimo Dutti',tags:'camisa blanca manga larga hombre massimo dutti elegante'},
+  {id:40,nombre:'Polera cuello tortuga negra',cat:'poleras',tipo:'top',color:'negro',emoji:'🖤',img:'https://images.unsplash.com/photo-1617114245811-eba9f0b4ad57?w=400&q=80',bg:'#F1EFE8',precio:22990,marca:'Zara',tags:'polera cuello tortuga turtleneck negra zara'},
+
+  // ══ PANTALONES ══
+  {id:9,nombre:'Jean azul slim fit',cat:'pantalones',tipo:'pants',color:'azul',emoji:'👖',img:'https://images.unsplash.com/photo-1542272604-787c3835535d?w=400&q=80',bg:'#E6F1FB',precio:34990,marca:'Zara',tags:'jean azul slim fit zara'},
+  {id:10,nombre:'Pantalón negro de vestir',cat:'pantalones',tipo:'pants',color:'negro',emoji:'👖',img:'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=400&q=80',bg:'#F1EFE8',precio:39990,marca:'H&M',tags:'pantalon negro vestir formal hm'},
+  {id:11,nombre:'Pantalón beige tiro alto',cat:'pantalones',tipo:'pants',color:'beige',emoji:'👖',img:'https://images.unsplash.com/photo-1594938298603-c8148c4b984f?w=400&q=80',bg:'#FAEEDA',precio:32990,marca:'Zara',tags:'pantalon beige tiro alto zara'},
+  {id:12,nombre:'Jean blanco recto',cat:'pantalones',tipo:'pants',color:'blanco',emoji:'👖',img:'https://images.unsplash.com/photo-1604176354204-9268737828e4?w=400&q=80',bg:'#F7F5F2',precio:27990,marca:'H&M',tags:'jean blanco recto hm'},
+  {id:13,nombre:'Pantalón verde oliva cargo',cat:'pantalones',tipo:'pants',color:'verde',emoji:'👖',img:'https://images.unsplash.com/photo-1548883354-94bcfe321cbb?w=400&q=80',bg:'#EAF3DE',precio:36990,marca:'Zara',tags:'pantalon verde oliva cargo zara'},
+  {id:41,nombre:'Jean negro skinny',cat:'pantalones',tipo:'pants',color:'negro',emoji:'👖',img:'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=400&q=80',bg:'#F1EFE8',precio:29990,marca:'Falabella',tags:'jean negro skinny falabella'},
+  {id:42,nombre:'Pantalón palazzo gris',cat:'pantalones',tipo:'pants',color:'gris',emoji:'👖',img:'https://images.unsplash.com/photo-1509631179647-0177331693ae?w=400&q=80',bg:'#F3F4F6',precio:44990,marca:'Paris',tags:'pantalon palazzo gris fluido paris'},
+  {id:43,nombre:'Jean mom fit celeste',cat:'pantalones',tipo:'pants',color:'celeste',emoji:'👖',img:'https://images.unsplash.com/photo-1475180098004-ca77a66827be?w=400&q=80',bg:'#E6F1FB',precio:38990,marca:'Falabella',tags:'jean mom fit celeste falabella'},
+  {id:44,nombre:'Pantalón jogger gris sport',cat:'pantalones',tipo:'pants',color:'gris',emoji:'🩳',img:'https://images.unsplash.com/photo-1552902865-b72c031ac5ea?w=400&q=80',bg:'#F3F4F6',precio:24990,marca:'Adidas',tags:'pantalon jogger gris sport adidas deportivo'},
+  {id:45,nombre:'Pantalón sastre cuadrille',cat:'pantalones',tipo:'pants',color:'negro',emoji:'👖',img:'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?w=400&q=80',bg:'#F1EFE8',precio:59990,marca:'Mango',tags:'pantalon sastre cuadrille negro mango europeo'},
+  {id:46,nombre:'Jean wide leg azul',cat:'pantalones',tipo:'pants',color:'azul',emoji:'👖',img:'https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=400&q=80',bg:'#E6F1FB',precio:42990,marca:'Zara',tags:'jean wide leg azul wide zara'},
+  {id:47,nombre:'Pantalón lino blanco verano',cat:'pantalones',tipo:'pants',color:'blanco',emoji:'👖',img:'https://images.unsplash.com/photo-1521223890158-f9f7c3d5d504?w=400&q=80',bg:'#F7F5F2',precio:34990,marca:'Massimo Dutti',tags:'pantalon lino blanco verano massimo dutti italiano'},
+  {id:48,nombre:'Bermuda cargo caqui hombre',cat:'pantalones',tipo:'pants',color:'caqui',emoji:'🩳',img:'https://images.unsplash.com/photo-1591195853828-11db59a44f43?w=400&q=80',bg:'#FAEEDA',precio:27990,marca:'Falabella',tags:'bermuda cargo caqui hombre falabella'},
+  {id:49,nombre:'Jean oscuro slim hombre',cat:'pantalones',tipo:'pants',color:'azul oscuro',emoji:'👖',img:'https://images.unsplash.com/photo-1542272604-787c3835535d?w=400&q=80',bg:'#E6F1FB',precio:44990,marca:'Levis',tags:'jean oscuro slim hombre levis'},
+  {id:50,nombre:'Pantalón chino beige hombre',cat:'pantalones',tipo:'pants',color:'beige',emoji:'👖',img:'https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=400&q=80',bg:'#FAEEDA',precio:37990,marca:'Falabella',tags:'pantalon chino beige hombre falabella'},
+
+  // ══ VESTIDOS ══
+  {id:14,nombre:'Vestido negro midi elegante',cat:'vestidos',tipo:'top',color:'negro',emoji:'👗',img:'https://images.unsplash.com/photo-1539008835657-9e8e9680c956?w=400&q=80',bg:'#F1EFE8',precio:49990,marca:'Zara',tags:'vestido negro midi elegante zara'},
+  {id:15,nombre:'Vestido blanco manga larga',cat:'vestidos',tipo:'top',color:'blanco',emoji:'👗',img:'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=400&q=80',bg:'#F7F5F2',precio:44990,marca:'H&M',tags:'vestido blanco manga larga hm'},
+  {id:16,nombre:'Vestido azul marino casual',cat:'vestidos',tipo:'top',color:'azul marino',emoji:'👗',img:'https://images.unsplash.com/photo-1623609163859-ca93c959b98a?w=400&q=80',bg:'#E6F1FB',precio:38990,marca:'Zara',tags:'vestido azul marino casual zara'},
+  {id:17,nombre:'Vestido lino beige verano',cat:'vestidos',tipo:'top',color:'beige',emoji:'👗',img:'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=400&q=80',bg:'#FAEEDA',precio:34990,marca:'H&M',tags:'vestido lino beige verano hm'},
+  {id:51,nombre:'Vestido floral maxi verano',cat:'vestidos',tipo:'top',color:'multicolor',emoji:'👗',img:'https://images.unsplash.com/photo-1566479179817-c6c0bc16e1d0?w=400&q=80',bg:'#FEF9E7',precio:54990,marca:'Falabella',tags:'vestido floral maxi verano falabella'},
+  {id:52,nombre:'Vestido rojo corto fiesta',cat:'vestidos',tipo:'top',color:'rojo',emoji:'👗',img:'https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=400&q=80',bg:'#FBEAE8',precio:64990,marca:'Paris',tags:'vestido rojo corto fiesta paris'},
+  {id:53,nombre:'Vestido wrap verde esmeralda',cat:'vestidos',tipo:'top',color:'verde',emoji:'💚',img:'https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=400&q=80',bg:'#EAF3DE',precio:47990,marca:'Mango',tags:'vestido wrap verde esmeralda mango europeo'},
+  {id:54,nombre:'Vestido camisero denim azul',cat:'vestidos',tipo:'top',color:'azul',emoji:'👗',img:'https://images.unsplash.com/photo-1485968579580-b6d095142e6e?w=400&q=80',bg:'#E6F1FB',precio:42990,marca:'Zara',tags:'vestido camisero denim azul jeans zara'},
+  {id:55,nombre:'Vestido slip satinado champagne',cat:'vestidos',tipo:'top',color:'champagne',emoji:'✨',img:'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=400&q=80',bg:'#FEF3C7',precio:74990,marca:'Falabella',tags:'vestido slip satinado champagne elegante falabella'},
+  {id:56,nombre:'Vestido midi estampado tropical',cat:'vestidos',tipo:'top',color:'multicolor',emoji:'🌺',img:'https://images.unsplash.com/photo-1550639525-c97d455acf70?w=400&q=80',bg:'#EAF3DE',precio:39990,marca:'H&M',tags:'vestido midi tropical estampado verano hm'},
+  {id:57,nombre:'Vestido negro asimétrico',cat:'vestidos',tipo:'top',color:'negro',emoji:'🖤',img:'https://images.unsplash.com/photo-1551163943-3f7253a81af3?w=400&q=80',bg:'#F1EFE8',precio:69990,marca:'Massimo Dutti',tags:'vestido negro asimetrico elegante massimo dutti italiano'},
+  {id:58,nombre:'Vestido rosa palo midi romántico',cat:'vestidos',tipo:'top',color:'rosa',emoji:'🌸',img:'https://images.unsplash.com/photo-1580651315530-69c8e0026377?w=400&q=80',bg:'#FBEAF0',precio:52990,marca:'Paris',tags:'vestido rosa palo midi romantico paris'},
+  {id:59,nombre:'Vestido lencero borgoña',cat:'vestidos',tipo:'top',color:'borgoña',emoji:'🍷',img:'https://images.unsplash.com/photo-1603344797033-f0f4f587ab60?w=400&q=80',bg:'#F5E6E8',precio:58990,marca:'Zara',tags:'vestido lencero borgona vino elegante zara'},
+  {id:60,nombre:'Vestido playero rayas multicolor',cat:'vestidos',tipo:'top',color:'multicolor',emoji:'🏖️',img:'https://images.unsplash.com/photo-1572840019017-3d52de4c5fe5?w=400&q=80',bg:'#E6F1FB',precio:31990,marca:'Falabella',tags:'vestido playero rayas verano playa falabella'},
+
+  // ══ CHAQUETAS ══
+  {id:18,nombre:'Blazer negro estructurado',cat:'chaquetas',tipo:'jacket',color:'negro',emoji:'🧥',img:'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=400&q=80',bg:'#F1EFE8',precio:59990,marca:'Zara',tags:'blazer negro estructurado formal zara'},
+  {id:19,nombre:'Chaqueta beige oversize',cat:'chaquetas',tipo:'jacket',color:'beige',emoji:'🧥',img:'https://images.unsplash.com/photo-1548126032-079a0fb0099d?w=400&q=80',bg:'#FAEEDA',precio:54990,marca:'H&M',tags:'chaqueta beige oversize casual hm'},
+  {id:20,nombre:'Blazer azul marino',cat:'chaquetas',tipo:'jacket',color:'azul marino',emoji:'🧥',img:'https://images.unsplash.com/photo-1617137968427-85924c800a22?w=400&q=80',bg:'#E6F1FB',precio:64990,marca:'Zara',tags:'blazer azul marino formal zara'},
+  {id:21,nombre:'Chaqueta cuero negro',cat:'chaquetas',tipo:'jacket',color:'negro',emoji:'🧥',img:'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400&q=80',bg:'#F1EFE8',precio:89990,marca:'H&M',tags:'chaqueta cuero negro moto hm'},
+  {id:61,nombre:'Blazer tweed rosa Chanel-style',cat:'chaquetas',tipo:'jacket',color:'rosa',emoji:'💗',img:'https://images.unsplash.com/photo-1548549557-dbe9155f4e6c?w=400&q=80',bg:'#FBEAF0',precio:119990,marca:'Paris',tags:'blazer tweed rosa chanel estilo paris europeo'},
+  {id:62,nombre:'Parka verde oliva impermeable',cat:'chaquetas',tipo:'jacket',color:'verde',emoji:'🧥',img:'https://images.unsplash.com/photo-1544923246-77307dd654cb?w=400&q=80',bg:'#EAF3DE',precio:79990,marca:'Falabella',tags:'parka verde oliva impermeable lluvia falabella'},
+  {id:63,nombre:'Chaqueta punto beige abierta',cat:'chaquetas',tipo:'jacket',color:'beige',emoji:'🧶',img:'https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=400&q=80',bg:'#FAEEDA',precio:44990,marca:'Zara',tags:'chaqueta punto cardigan beige abierta zara'},
+  {id:64,nombre:'Trench coat camel clásico',cat:'chaquetas',tipo:'jacket',color:'camel',emoji:'🧥',img:'https://images.unsplash.com/photo-1539533018447-63fcce2678e3?w=400&q=80',bg:'#FAEEDA',precio:94990,marca:'Massimo Dutti',tags:'trench coat camel clasico impermeable massimo dutti italiano europeo'},
+  {id:65,nombre:'Chaqueta denim azul clásica',cat:'chaquetas',tipo:'jacket',color:'azul',emoji:'🧥',img:'https://images.unsplash.com/photo-1543076447-215ad9ba6923?w=400&q=80',bg:'#E6F1FB',precio:47990,marca:'Falabella',tags:'chaqueta denim azul jeans clasica falabella'},
+  {id:66,nombre:'Blazer blanco roto verano',cat:'chaquetas',tipo:'jacket',color:'blanco',emoji:'🤍',img:'https://images.unsplash.com/photo-1598033129183-c4f50c736f10?w=400&q=80',bg:'#F7F5F2',precio:52990,marca:'Mango',tags:'blazer blanco roto verano mango europeo'},
+  {id:67,nombre:'Chaqueta acolchada negra puffer',cat:'chaquetas',tipo:'jacket',color:'negro',emoji:'🧥',img:'https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?w=400&q=80',bg:'#F1EFE8',precio:69990,marca:'Falabella',tags:'chaqueta acolchada puffer negra invierno falabella'},
+  {id:68,nombre:'Cardigan rojo navideño',cat:'chaquetas',tipo:'jacket',color:'rojo',emoji:'❤️',img:'https://images.unsplash.com/photo-1544966503-7e80b2e9aced?w=400&q=80',bg:'#FBEAE8',precio:34990,marca:'H&M',tags:'cardigan rojo navideño tejido hm'},
+  {id:69,nombre:'Blazer a cuadros gris hombre',cat:'chaquetas',tipo:'jacket',color:'gris',emoji:'🧥',img:'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=400&q=80',bg:'#F3F4F6',precio:84990,marca:'Falabella',tags:'blazer cuadros gris hombre falabella elegante'},
+  {id:70,nombre:'Chaqueta sport azul hombre',cat:'chaquetas',tipo:'jacket',color:'azul',emoji:'🧥',img:'https://images.unsplash.com/photo-1556821840-3a63f15732ce?w=400&q=80',bg:'#E6F1FB',precio:59990,marca:'Adidas',tags:'chaqueta sport azul hombre adidas deportiva'},
+
+  // ══ CALZADO ══
+  {id:22,nombre:'Zapatillas blancas clásicas',cat:'calzado',tipo:'shoes',color:'blanco',emoji:'👟',img:'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&q=80',bg:'#F7F5F2',precio:39990,marca:'Zara',tags:'zapatillas blancas clasicas zara'},
+  {id:23,nombre:'Zapatos negros taco bajo',cat:'calzado',tipo:'shoes',color:'negro',emoji:'👠',img:'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=400&q=80',bg:'#F1EFE8',precio:44990,marca:'H&M',tags:'zapatos negros taco bajo formal hm'},
+  {id:24,nombre:'Botines café caña alta',cat:'calzado',tipo:'shoes',color:'café',emoji:'👢',img:'https://images.unsplash.com/photo-1605812860427-4024433a70fd?w=400&q=80',bg:'#FAEEDA',precio:59990,marca:'Zara',tags:'botines cafe caña alta zara'},
+  {id:25,nombre:'Zapatillas running negras',cat:'calzado',tipo:'shoes',color:'negro',emoji:'👟',img:'https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=400&q=80',bg:'#F1EFE8',precio:79990,marca:'Nike',tags:'zapatillas running negras deporte nike'},
+  {id:26,nombre:'Sandalias beige planas',cat:'calzado',tipo:'shoes',color:'beige',emoji:'🩴',img:'https://images.unsplash.com/photo-1603487742131-4160ec999306?w=400&q=80',bg:'#FAEEDA',precio:29990,marca:'Zara',tags:'sandalias beige planas verano zara'},
+  {id:71,nombre:'Tacos stiletto nude',cat:'calzado',tipo:'shoes',color:'nude',emoji:'👠',img:'https://images.unsplash.com/photo-1515347619252-60a4bf4fff4f?w=400&q=80',bg:'#FAEEDA',precio:54990,marca:'Falabella',tags:'tacos stiletto nude elegante falabella'},
+  {id:72,nombre:'Sneakers blancos Nike Air',cat:'calzado',tipo:'shoes',color:'blanco',emoji:'👟',img:'https://images.unsplash.com/photo-1600185365926-3a2ce3cdb9eb?w=400&q=80',bg:'#F7F5F2',precio:89990,marca:'Nike',tags:'sneakers blancos nike air force'},
+  {id:73,nombre:'Mocasines cuero marrón',cat:'calzado',tipo:'shoes',color:'marrón',emoji:'🥿',img:'https://images.unsplash.com/photo-1614252369475-531eba835eb1?w=400&q=80',bg:'#FAEEDA',precio:64990,marca:'Falabella',tags:'mocasines cuero marron clasico falabella'},
+  {id:74,nombre:'Botas negras caña larga',cat:'calzado',tipo:'shoes',color:'negro',emoji:'👢',img:'https://images.unsplash.com/photo-1608256246200-53e635b5b65f?w=400&q=80',bg:'#F1EFE8',precio:84990,marca:'Paris',tags:'botas negras caña larga invierno paris'},
+  {id:75,nombre:'Sandalias taco grueso doradas',cat:'calzado',tipo:'shoes',color:'dorado',emoji:'✨',img:'https://images.unsplash.com/photo-1519235624215-85175d5eb36e?w=400&q=80',bg:'#FEF3C7',precio:47990,marca:'Falabella',tags:'sandalias taco grueso doradas fiesta falabella'},
+  {id:76,nombre:'Zapatillas Adidas Superstar',cat:'calzado',tipo:'shoes',color:'blanco',emoji:'👟',img:'https://images.unsplash.com/photo-1582588678413-dbf45f4823e9?w=400&q=80',bg:'#F7F5F2',precio:84990,marca:'Adidas',tags:'zapatillas adidas superstar blancas clasicas'},
+  {id:77,nombre:'Zapatos Oxford negro hombre',cat:'calzado',tipo:'shoes',color:'negro',emoji:'👞',img:'https://images.unsplash.com/photo-1533867617858-e7b97e060509?w=400&q=80',bg:'#F1EFE8',precio:69990,marca:'Falabella',tags:'zapatos oxford negro hombre formal falabella'},
+  {id:78,nombre:'Alpargatas canvas azul',cat:'calzado',tipo:'shoes',color:'azul',emoji:'🥿',img:'https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?w=400&q=80',bg:'#E6F1FB',precio:24990,marca:'H&M',tags:'alpargatas canvas azul verano hm'},
+  {id:79,nombre:'Zapatillas de plataforma negras',cat:'calzado',tipo:'shoes',color:'negro',emoji:'👟',img:'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=400&q=80',bg:'#F1EFE8',precio:54990,marca:'Zara',tags:'zapatillas plataforma negras chunky zara'},
+  {id:80,nombre:'Mules cuero negro elegante',cat:'calzado',tipo:'shoes',color:'negro',emoji:'👠',img:'https://images.unsplash.com/photo-1543508282-6319a3e2621f?w=400&q=80',bg:'#F1EFE8',precio:57990,marca:'Mango',tags:'mules cuero negro elegante mango europeo'},
+
+  // ══ ACCESORIOS MUJER ══
+  {id:201,nombre:'Bolso negro mini cuero',cat:'accesorios',tipo:'acc',subcat:'cartera',genero:'mujer',emoji:'👛',img:'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=400&q=80',bg:'#F1EFE8',precio:39990,marca:'Zara',tags:'bolso negro mini cuero mujer zara'},
+  {id:202,nombre:'Bolso tote blanco lona',cat:'accesorios',tipo:'acc',subcat:'bolso',genero:'mujer',emoji:'🛍️',img:'https://images.unsplash.com/photo-1591561954557-26941169b49e?w=400&q=80',bg:'#F7F5F2',precio:29990,marca:'H&M',tags:'bolso tote blanco lona mujer hm'},
+  {id:203,nombre:'Collar dorado minimalista',cat:'accesorios',tipo:'acc',subcat:'collar',genero:'mujer',emoji:'📿',img:'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=400&q=80',bg:'#FEF3C7',precio:15990,marca:'Zara',tags:'collar dorado minimalista mujer zara'},
+  {id:204,nombre:'Cinturón negro fino',cat:'accesorios',tipo:'acc',subcat:'cinturon',genero:'mujer',emoji:'🪢',img:'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&q=80',bg:'#F1EFE8',precio:12990,marca:'H&M',tags:'cinturon negro fino mujer hm'},
+  {id:207,nombre:'Reloj dorado minimalista',cat:'accesorios',tipo:'acc',subcat:'reloj',genero:'mujer',emoji:'⌚',img:'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&q=80',bg:'#FEF3C7',precio:49990,marca:'Zara',tags:'reloj dorado minimalista mujer zara'},
+  {id:208,nombre:'Bolso shopper cuero camel',cat:'accesorios',tipo:'acc',subcat:'bolso',genero:'mujer',emoji:'👜',img:'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=400&q=80',bg:'#FAEEDA',precio:69990,marca:'Falabella',tags:'bolso shopper cuero camel mujer falabella'},
+  {id:209,nombre:'Aretes argolla dorados grandes',cat:'accesorios',tipo:'acc',subcat:'collar',genero:'mujer',emoji:'💛',img:'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=400&q=80',bg:'#FEF3C7',precio:9990,marca:'Paris',tags:'aretes argolla dorados grandes mujer paris'},
+  {id:210,nombre:'Sombrero paja playa',cat:'accesorios',tipo:'acc',subcat:'gorro',genero:'mujer',emoji:'👒',img:'https://images.unsplash.com/photo-1514327605112-b887c0e61c0a?w=400&q=80',bg:'#FEF3C7',precio:19990,marca:'Falabella',tags:'sombrero paja playa verano mujer falabella'},
+  {id:211,nombre:'Cartera clutch plateada fiesta',cat:'accesorios',tipo:'acc',subcat:'cartera',genero:'mujer',emoji:'💼',img:'https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?w=400&q=80',bg:'#F3F4F6',precio:34990,marca:'Paris',tags:'cartera clutch plateada fiesta mujer paris'},
+  {id:212,nombre:'Pañuelo seda estampado mujer',cat:'accesorios',tipo:'acc',subcat:'bufanda',genero:'mujer',emoji:'🧣',img:'https://images.unsplash.com/photo-1601924578024-d2c23acef932?w=400&q=80',bg:'#FEF9E7',precio:22990,marca:'Falabella',tags:'pañuelo seda estampado mujer falabella'},
+  {id:213,nombre:'Bolso crossbody marrón',cat:'accesorios',tipo:'acc',subcat:'bolso',genero:'mujer',emoji:'👜',img:'https://images.unsplash.com/photo-1575032617751-6ddec2089882?w=400&q=80',bg:'#FAEEDA',precio:44990,marca:'Mango',tags:'bolso crossbody marron mujer mango europeo'},
+  {id:214,nombre:'Pulsera charm dorada',cat:'accesorios',tipo:'acc',subcat:'pulsera',genero:'mujer',emoji:'✨',img:'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=400&q=80',bg:'#FEF3C7',precio:12990,marca:'Falabella',tags:'pulsera charm dorada mujer falabella'},
+
+  // ══ ACCESORIOS HOMBRE ══
+  {id:101,nombre:'Reloj negro deportivo',cat:'accesorios',tipo:'acc',subcat:'reloj',genero:'hombre',emoji:'⌚',img:'https://images.unsplash.com/photo-1542496658-e33a6d0d4a27?w=400&q=80',bg:'#F1EFE8',precio:89990,marca:'Casio',tags:'reloj negro deportivo hombre casio'},
+  {id:104,nombre:'Cinturón cuero marrón',cat:'accesorios',tipo:'acc',subcat:'cinturon',genero:'hombre',emoji:'🪢',img:'https://images.unsplash.com/photo-1624222247344-550fb60fe8ff?w=400&q=80',bg:'#FAEEDA',precio:24990,marca:'Falabella',tags:'cinturon cuero marron hombre falabella'},
+  {id:106,nombre:'Mochila negra urbana',cat:'accesorios',tipo:'acc',subcat:'mochila',genero:'hombre',emoji:'🎒',img:'https://images.unsplash.com/photo-1553062407-98eeb64c6a45?w=400&q=80',bg:'#F1EFE8',precio:49990,marca:'Falabella',tags:'mochila negra urbana hombre falabella'},
+  {id:107,nombre:'Corbata seda azul marino',cat:'accesorios',tipo:'acc',subcat:'corbata',genero:'hombre',emoji:'👔',img:'https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?w=400&q=80',bg:'#E6F1FB',precio:19990,marca:'Falabella',tags:'corbata seda azul marino hombre falabella formal'},
+  {id:108,nombre:'Billetera cuero negro slim',cat:'accesorios',tipo:'acc',subcat:'cartera',genero:'hombre',emoji:'💼',img:'https://images.unsplash.com/photo-1627123424574-724758594e93?w=400&q=80',bg:'#F1EFE8',precio:22990,marca:'Falabella',tags:'billetera cuero negro slim hombre falabella'},
+  {id:109,nombre:'Maletín ejecutivo cuero',cat:'accesorios',tipo:'acc',subcat:'maletin',genero:'hombre',emoji:'💼',img:'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=400&q=80',bg:'#FAEEDA',precio:89990,marca:'Massimo Dutti',tags:'maletin ejecutivo cuero hombre massimo dutti'},
+  {id:110,nombre:'Gorra negra snapback',cat:'accesorios',tipo:'acc',subcat:'gorro',genero:'hombre',emoji:'🧢',img:'https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=400&q=80',bg:'#F1EFE8',precio:14990,marca:'Falabella',tags:'gorra negra snapback hombre falabella urbano'},
+
+  // ══ ACCESORIOS UNISEX ══
+  {id:301,nombre:'Gafas de sol negras',cat:'accesorios',tipo:'acc',subcat:'gafas',genero:'unisex',emoji:'🕶️',img:'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=400&q=80',bg:'#F1EFE8',precio:19990,marca:'Zara',tags:'gafas sol negras unisex zara'},
+  {id:302,nombre:'Gorro lana gris',cat:'accesorios',tipo:'acc',subcat:'gorro',genero:'unisex',emoji:'🧢',img:'https://images.unsplash.com/photo-1576871337622-98d48d1cf531?w=400&q=80',bg:'#F3F4F6',precio:12990,marca:'H&M',tags:'gorro lana gris unisex hm'},
+  {id:303,nombre:'Bufanda beige lana',cat:'accesorios',tipo:'acc',subcat:'bufanda',genero:'unisex',emoji:'🧣',img:'https://images.unsplash.com/photo-1520903920243-00d872a2d1c9?w=400&q=80',bg:'#FAEEDA',precio:16990,marca:'Zara',tags:'bufanda beige lana unisex zara'},
+  {id:304,nombre:'Mochila canvas verde militar',cat:'accesorios',tipo:'acc',subcat:'mochila',genero:'unisex',emoji:'🎒',img:'https://images.unsplash.com/photo-1622560480605-d83c853bc5c3?w=400&q=80',bg:'#EAF3DE',precio:34990,marca:'Falabella',tags:'mochila canvas verde militar unisex falabella'},
+  {id:305,nombre:'Gafas sol cat eye carey',cat:'accesorios',tipo:'acc',subcat:'gafas',genero:'unisex',emoji:'🕶️',img:'https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=400&q=80',bg:'#FAEEDA',precio:24990,marca:'Paris',tags:'gafas sol cat eye carey vintage paris'},
+  {id:306,nombre:'Riñonera negra tendencia',cat:'accesorios',tipo:'acc',subcat:'bolso',genero:'unisex',emoji:'👜',img:'https://images.unsplash.com/photo-1553062407-98eeb64c6a45?w=400&q=80',bg:'#F1EFE8',precio:19990,marca:'H&M',tags:'riñonera negra tendencia unisex hm urbano'}
 ];
 
-function goPage(p){document.querySelectorAll('.pg').forEach(x=>x.classList.remove('act'));document.querySelectorAll('.nt').forEach(x=>x.classList.remove('on'));document.getElementById('page-'+p).classList.add('act');document.getElementById('nav-'+p).classList.add('on');if(p==='buscar')filtrarPrendas();if(p==='espejo')updateEspejo();if(p==='outfits')initOutfits();if(p==='inicio')updateHomeCard();if(['escaneo','espejo','buscar','outfits'].includes(p))setHomeCard(p);window.scrollTo(0,0);}
+function goPage(p){document.querySelectorAll('.pg').forEach(x=>x.classList.remove('act'));document.querySelectorAll('.nt').forEach(x=>x.classList.remove('on'));document.getElementById('page-'+p).classList.add('act');document.getElementById('nav-'+p).classList.add('on');if(p==='buscar')filtrarPrendas();if(p==='espejo')updateEspejo();if(p==='outfits')initOutfits();if(p==='inicio')updateHomeCard();if(p==='admin')admRenderGrid();if(['escaneo','espejo','buscar','outfits'].includes(p))setHomeCard(p);window.scrollTo(0,0);}
 function closeModal(id){document.getElementById(id).classList.remove('show');}
 function delay(ms){return new Promise(r=>setTimeout(r,ms));}
 function addMsg(txt,role,boxId){const box=document.getElementById(boxId);if(!box)return;const d=document.createElement('div');d.className=role==='ai'?'mai':'mu';d.innerHTML=role==='ai'?`<div class="mav">IA</div><div class="mbb">${txt}</div>`:`<div class="mbb">${txt}</div>`;box.appendChild(d);box.scrollTop=box.scrollHeight;}
@@ -1773,6 +1959,179 @@ window.addEventListener('appinstalled', () => {
   const banner = document.getElementById('install-banner');
   if (banner) banner.remove();
 });
+
+// ══ PANEL ADMINISTRADOR ══════════════════════════════════════════════════════
+let admPrendas = [];
+let admImgB64 = null;
+
+async function admIniciar() {
+  try {
+    const r = await window.storage.get('admin-catalogo');
+    if (r && r.value) {
+      admPrendas = JSON.parse(r.value);
+      admPrendas.forEach(p => { if (!cat.find(x => x.id === p.id)) cat.push(p); });
+      admRenderGrid();
+    }
+  } catch(e) { admPrendas = []; }
+}
+
+async function admPersistir() {
+  try { await window.storage.set('admin-catalogo', JSON.stringify(admPrendas)); }
+  catch(e) { console.error('Error guardando catálogo admin', e); }
+}
+
+// Carga imagen, la comprime si es necesaria y muestra preview inmediato
+function admCargarImg(input) {
+  const file = input.files[0]; if (!file) return;
+  const warn = document.getElementById('adm-img-size-warn');
+  if (file.size > 500000) warn.style.display = 'block'; else warn.style.display = 'none';
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    const dataUrl = e.target.result;
+    // Comprimir si > 300KB
+    if (dataUrl.length > 400000) {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX = 600;
+        let w = img.width, h = img.height;
+        if (w > h && w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+        else if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; }
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        admImgB64 = canvas.toDataURL('image/jpeg', 0.80);
+        admMostrarPreview(admImgB64);
+        warn.style.display = 'none';
+      };
+      img.src = dataUrl;
+    } else {
+      admImgB64 = dataUrl;
+      admMostrarPreview(admImgB64);
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+function admMostrarPreview(src) {
+  const ph = document.getElementById('adm-img-ph');
+  const prev = document.getElementById('adm-img-prev');
+  const badge = document.getElementById('adm-img-badge');
+  const cambiar = document.getElementById('adm-img-cambiar');
+  const zone = document.getElementById('adm-img-zone');
+  ph.style.display = 'none';
+  prev.src = src;
+  prev.style.display = 'block';
+  badge.style.display = 'block';
+  cambiar.style.display = 'block';
+  zone.style.borderColor = 'var(--sage)';
+  zone.style.background = 'transparent';
+}
+
+function admLimpiarImg() {
+  admImgB64 = null;
+  document.getElementById('adm-img-file').value = '';
+  document.getElementById('adm-img-ph').style.display = 'block';
+  document.getElementById('adm-img-prev').style.display = 'none';
+  document.getElementById('adm-img-prev').src = '';
+  document.getElementById('adm-img-badge').style.display = 'none';
+  document.getElementById('adm-img-cambiar').style.display = 'none';
+  document.getElementById('adm-img-size-warn').style.display = 'none';
+  const zone = document.getElementById('adm-img-zone');
+  zone.style.borderColor = 'var(--ashDD)';
+  zone.style.background = 'var(--ash)';
+}
+
+function admCatChange() {
+  const mapa = { poleras:'top', pantalones:'pants', vestidos:'top', chaquetas:'jacket', calzado:'shoes', accesorios:'acc' };
+  const c = document.getElementById('adm-cat').value;
+  if (mapa[c]) document.getElementById('adm-tipo').value = mapa[c];
+}
+
+function admMsg(texto, tipo) {
+  const el = document.getElementById('adm-msg');
+  el.textContent = texto;
+  el.style.display = 'block';
+  el.style.background = tipo==='ok' ? 'var(--sageL)' : 'var(--roseL)';
+  el.style.color = tipo==='ok' ? 'var(--sage)' : 'var(--rose)';
+  el.style.border = `1px solid ${tipo==='ok' ? 'var(--sage)' : 'var(--rose)'}`;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.style.display = 'none'; }, 3000);
+}
+
+async function admGuardar() {
+  const nombre = document.getElementById('adm-nombre').value.trim();
+  const catVal = document.getElementById('adm-cat').value;
+  if (!nombre) { admMsg('⚠ El nombre es obligatorio', 'err'); return; }
+  if (!catVal) { admMsg('⚠ Elige una categoría', 'err'); return; }
+  if (!admImgB64) { admMsg('⚠ Sube una imagen de la prenda', 'err'); return; }
+
+  const bgMap = { poleras:'#F7F5F2', pantalones:'#E6F1FB', vestidos:'#F7F5F2', chaquetas:'#F1EFE8', calzado:'#F7F5F2', accesorios:'#FEF3C7' };
+  const emojiMap = { top:'👕', pants:'👖', jacket:'🧥', shoes:'👟', acc:'👜' };
+  const tipo = document.getElementById('adm-tipo').value;
+
+  const p = {
+    id: Date.now(),
+    nombre,
+    cat: catVal,
+    tipo,
+    color: document.getElementById('adm-color').value.trim() || 'neutro',
+    emoji: emojiMap[tipo] || '👕',
+    img: admImgB64,
+    bg: bgMap[catVal] || '#F7F5F2',
+    precio: parseInt(document.getElementById('adm-precio').value) || 0,
+    marca: document.getElementById('adm-marca').value.trim() || 'Admin',
+    tags: document.getElementById('adm-tags').value.trim() || nombre.toLowerCase(),
+    genero: document.getElementById('adm-genero').value || undefined,
+    esAdmin: true
+  };
+
+  cat.push(p);
+  admPrendas.push(p);
+  await admPersistir();
+
+  // Limpiar formulario
+  ['adm-nombre','adm-color','adm-marca','adm-precio','adm-tags'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  ['adm-cat','adm-tipo','adm-genero'].forEach(id => { const el=document.getElementById(id); if(el) el.selectedIndex=0; });
+  admLimpiarImg();
+
+  admRenderGrid();
+  admMsg(`✓ "${nombre}" agregada al catálogo`, 'ok');
+}
+
+async function admEliminar(id) {
+  if (!confirm('¿Eliminar esta prenda del catálogo?')) return;
+  admPrendas = admPrendas.filter(p => p.id !== id);
+  const idx = cat.findIndex(p => p.id === id);
+  if (idx !== -1) cat.splice(idx, 1);
+  await admPersistir();
+  admRenderGrid();
+}
+
+function admRenderGrid() {
+  const grid = document.getElementById('adm-grid');
+  const empty = document.getElementById('adm-empty');
+  const count = document.getElementById('adm-count');
+  count.textContent = admPrendas.length + ' prenda' + (admPrendas.length !== 1 ? 's' : '');
+  if (admPrendas.length === 0) { grid.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display = 'none';
+  grid.innerHTML = admPrendas.map(p => `
+    <div style="border:1px solid var(--ashDD);border-radius:12px;overflow:hidden;background:var(--white)">
+      <div style="height:90px;background:${p.bg};position:relative;overflow:hidden">
+        <img src="${p.img}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none'">
+        <div style="position:absolute;top:5px;right:5px;background:var(--goldL);border:1px solid var(--gold);border-radius:4px;padding:2px 6px;font-size:9px;font-weight:600;color:var(--goldD)">Admin</div>
+      </div>
+      <div style="padding:8px 10px">
+        <div style="font-size:11px;font-weight:600;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.nombre}</div>
+        <div style="font-size:10px;color:var(--fog);margin-top:1px">${p.cat} · ${p.marca}</div>
+        <div style="font-size:11px;font-weight:600;margin-top:3px">${p.precio>0?'$'+p.precio.toLocaleString('es-CL'):'Sin precio'}</div>
+        <button onclick="admEliminar(${p.id})" style="margin-top:6px;width:100%;padding:4px;background:var(--roseL);color:var(--rose);border:1px solid rgba(192,82,74,.2);border-radius:6px;font-size:10px;font-weight:500;cursor:pointer;font-family:var(--sans)">✕ Eliminar</button>
+      </div>
+    </div>`).join('');
+}
+
+// Cargar prendas admin al iniciar
+document.addEventListener('DOMContentLoaded', () => { admIniciar(); });
 
 // ══ SERVICE WORKER ════════════════════════════════════════════════════════════
 if ('serviceWorker' in navigator) {
