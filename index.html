@@ -643,7 +643,7 @@ svg{display:block;}
       </div>
       <div id="tryon-res" style="display:none">
         <div style="font-size:10px;font-weight:500;color:var(--fog);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Tu espejo virtual</div>
-        <div id="vistas-tabs" style="display:flex;gap:5px;margin-bottom:10px;overflow-x:auto;scrollbar-width:none;flex-wrap:nowrap;align-items:center;padding-bottom:2px"></div>
+        <div id="vistas-tabs" style="display:flex;gap:6px;margin-bottom:10px;overflow-x:auto;scrollbar-width:none"></div>
         <div style="border-radius:var(--r3);overflow:hidden;box-shadow:var(--shadow-lg);position:relative">
           <img id="tryon-img" style="width:100%;display:block;transition:transform .4s ease" alt="Resultado Try-On">
         </div>
@@ -1545,7 +1545,7 @@ function setGAB(tipo, texto) {
 }
 
 // ══ TRY-ON (ACTUALIZADO CON ANÁLISIS DE PRENDA) ════════════════════════════
-function resetTryOn(){pararRotacion();document.getElementById('tryon-res').style.display='none';document.getElementById('tryon-err').style.display='none';document.getElementById('tryon-analisis').style.display='none';document.getElementById('tryon-sel').style.display='block';document.getElementById('reaccion-resp').style.display='none';const b=document.getElementById('bg-removed-badge');if(b)b.style.display='none';}
+function resetTryOn(){document.getElementById('tryon-res').style.display='none';document.getElementById('tryon-err').style.display='none';document.getElementById('tryon-analisis').style.display='none';document.getElementById('tryon-sel').style.display='block';document.getElementById('reaccion-resp').style.display='none';const b=document.getElementById('bg-removed-badge');if(b)b.style.display='none';}
 
 function iniciarTryOn(){
   const prendas=Object.values(outfit).filter(Boolean);
@@ -1558,97 +1558,12 @@ function iniciarTryOn(){
   document.getElementById('tryon-analisis').style.display='none';
   document.getElementById('tryon-sel').style.display='block';
   const tl={top:'Top / Polera',pants:'Pantalón',shoes:'Calzado',jacket:'Chaqueta',acc:'Accesorio'};
-  const prendasRopa = prendas.filter(p=>p.tipo!=='acc');
-  let html = '';
-  if (prendasRopa.length > 1) {
-    html += `<button onclick="ejecutarTryOnConjunto()" style="display:flex;align-items:center;gap:12px;padding:13px 14px;border:2px solid var(--gold);border-radius:var(--r2);background:var(--goldL);cursor:pointer;text-align:left;width:100%;font-family:var(--sans);margin-bottom:8px">
-      <span style="font-size:22px">✨</span>
-      <div style="flex:1"><div style="font-size:13px;font-weight:600;color:var(--goldD)">Probar conjunto completo</div><div style="font-size:10.5px;color:var(--goldD);opacity:.7;margin-top:2px">Aplica ${prendasRopa.length} prendas en secuencia • sin mezclar diseños</div></div>
-      <span style="font-size:16px;color:var(--goldD)">→</span>
-    </button>`;
-  }
-  html += prendas.map(p=>`
-    <button onclick="ejecutarTryOn(${p.id})" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--ashDD);border-radius:var(--r2);background:var(--white);cursor:pointer;text-align:left;width:100%;font-family:var(--sans);transition:border-color .2s;margin-bottom:4px" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--ashDD)'">
+  document.getElementById('tryon-btns').innerHTML=prendas.map(p=>`
+    <button onclick="ejecutarTryOn(${p.id})" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--ashDD);border-radius:var(--r2);background:var(--white);cursor:pointer;text-align:left;width:100%;font-family:var(--sans);transition:border-color .2s" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--ashDD)'">
       <img src="${p.img}" style="width:44px;height:44px;border-radius:var(--r);object-fit:cover;flex-shrink:0" onerror="this.style.display='none'">
-      <div style="flex:1"><div style="font-size:12.5px;font-weight:500">${p.nombre}</div><div style="font-size:10.5px;color:var(--fog);margin-top:2px">${tl[p.tipo]||p.tipo} · individual</div></div>
+      <div style="flex:1"><div style="font-size:12.5px;font-weight:500">${p.nombre}</div><div style="font-size:10.5px;color:var(--fog);margin-top:2px">${tl[p.tipo]||p.tipo}</div></div>
       <span style="font-size:16px;color:var(--fog)">→</span>
     </button>`).join('');
-  document.getElementById('tryon-btns').innerHTML=html;
-}
-
-// ── TRY-ON CONJUNTO: aplica prendas en secuencia, zona correcta para cada una ──
-const _TRYON_ORDEN = ['top','jacket','pants','shoes']; // acc nunca contamina torso
-const _TRYON_CAT = { top:'tops', jacket:'tops', pants:'bottoms', shoes:'shoes', acc:'auto' };
-
-async function _aplicarSecuencial(imgBase, listaPrendas) {
-  let img = imgBase;
-  for (const { prenda, b64, analisis } of listaPrendas) {
-    const payload = {
-      human_img: img,
-      garm_img: b64,
-      garment_des: prenda.nombre,
-      category: _TRYON_CAT[prenda.tipo] || 'auto',
-      needs_bg_removal: analisis.needsBgRemoval
-    };
-    const r = await fetch('/api/tryon', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
-    const d = await r.json();
-    if (d.output) img = d.output;
-  }
-  return img;
-}
-
-async function ejecutarTryOnConjunto() {
-  const prendasOrdenadas = _TRYON_ORDEN.map(t => outfit[t]).filter(Boolean);
-  if (prendasOrdenadas.length === 0 || !window._foto) return;
-  window._tryonPrendaNombre = 'conjunto (' + prendasOrdenadas.map(p=>p.nombre.split(' ')[0]).join(', ') + ')';
-  const modo360 = !!(window._foto && window._fotoPerfil && window._fotoEspalda);
-
-  document.getElementById('tryon-sel').style.display = 'none';
-  document.getElementById('tryon-analisis').style.display = 'block';
-  document.getElementById('tryon-load').style.display = 'none';
-  document.getElementById('tryon-res').style.display = 'none';
-  document.getElementById('tryon-err').style.display = 'none';
-  setGAB('proc', `🔍 Analizando ${prendasOrdenadas.length} prendas del conjunto...`);
-
-  const lista = [];
-  for (const p of prendasOrdenadas) {
-    const b64 = await imgToBase64Url(p.img);
-    const a = await analizarPrenda(b64);
-    lista.push({ prenda: p, b64, analisis: a });
-  }
-  setGAB('ok', `✓ ${prendasOrdenadas.length} prendas listas • aplicando sin mezclar zonas`);
-  await delay(600);
-
-  document.getElementById('tryon-analisis').style.display = 'none';
-  document.getElementById('tryon-load').style.display = 'block';
-  const bar = document.getElementById('tryon-bar');
-  bar.style.width = '5%';
-  let prog = 5;
-  const iv = setInterval(()=>{ if(prog<85){prog+=0.3;bar.style.width=prog+'%';} },300);
-
-  try {
-    document.getElementById('tryon-msg').textContent = `Aplicando conjunto (${prendasOrdenadas.length} prendas en secuencia)...`;
-    document.getElementById('tryon-submsg').textContent = 'Cada prenda se aplica en su zona • sin contaminar otras áreas';
-    const resultFront = await _aplicarSecuencial(window._foto, lista);
-    let resultPerfil = null, resultEspalda = null;
-    if (modo360) {
-      document.getElementById('tryon-msg').textContent = 'Procesando vista de perfil...';
-      resultPerfil = await _aplicarSecuencial(window._fotoPerfil, lista);
-      document.getElementById('tryon-msg').textContent = 'Procesando vista de espalda...';
-      resultEspalda = await _aplicarSecuencial(window._fotoEspalda, lista);
-    }
-    clearInterval(iv); bar.style.width = '100%';
-    await delay(200);
-    _mostrarResultadoTryOn({ front: resultFront, perfil: resultPerfil, espalda: resultEspalda }, modo360 && resultPerfil && resultEspalda, false);
-  } catch(err) {
-    clearInterval(iv);
-    document.getElementById('tryon-load').style.display='none';
-    document.getElementById('tryon-sel').style.display='block';
-    const el=document.getElementById('tryon-err'); el.style.display='block';
-    el.innerHTML = err.message.includes('402')
-      ? 'Sin créditos en FASHN.ai. <a href="https://app.fashn.ai" target="_blank" style="color:var(--rose)">app.fashn.ai →</a>'
-      : 'Error: ' + err.message;
-  }
 }
 
 async function imgToBase64Url(src){
@@ -1706,7 +1621,7 @@ async function ejecutarTryOn(prendaId) {
   }, modo360 ? 800 : 500);
 
   try {
-    const catMap = { top: 'tops', pants: 'bottoms', jacket: 'tops', shoes: 'shoes', acc: 'auto' };
+    const catMap = { top: 'tops', pants: 'bottoms', jacket: 'tops', shoes: 'auto', acc: 'auto' };
     const basePayload = { garm_img: prendaB64, garment_des: prenda.nombre, category: catMap[prenda.tipo] || 'auto', needs_bg_removal: analisis.needsBgRemoval };
 
     let results;
@@ -1729,7 +1644,37 @@ async function ejecutarTryOn(prendaId) {
 
     clearInterval(iv); bar.style.width = '100%';
     await delay(300);
-    _mostrarResultadoTryOn(results, modo360 && results.perfil && results.espalda, analisis.needsBgRemoval);
+
+    document.getElementById('tryon-load').style.display = 'none';
+    document.getElementById('tryon-res').style.display = 'block';
+
+    // Mostrar resultado frontal por defecto
+    const imgEl = document.getElementById('tryon-img');
+    imgEl.src = results.front; imgEl.style.transform = 'scale(1)';
+    document.getElementById('tryon-dl').href = results.front;
+    document.getElementById('reaccion-resp').style.display = 'none';
+
+    const bgBadge = document.getElementById('bg-removed-badge');
+    if (bgBadge) bgBadge.style.display = analisis.needsBgRemoval ? 'flex' : 'none';
+
+    // Tabs según modo
+    const tabStyle = 'padding:6px 14px;border:none;border-radius:2px;font-size:11px;font-weight:500;cursor:pointer;font-family:var(--sans);letter-spacing:.4px;white-space:nowrap';
+    const tabOn = `background:var(--ink);color:var(--white);`;
+    const tabOff = `background:var(--ash);color:var(--ink);border:1px solid var(--ashDD);`;
+
+    let tabs = `<button onclick="zoomVista2('full',this)" style="${tabStyle}${tabOn}">Completo</button>
+      <button onclick="zoomVista2('cara',this)" style="${tabStyle}${tabOff}">Cara</button>
+      <button onclick="zoomVista2('torso',this)" style="${tabStyle}${tabOff}">Torso</button>
+      <button onclick="zoomVista2('pies',this)" style="${tabStyle}${tabOff}">Calzado</button>`;
+
+    if (modo360 && results.perfil && results.espalda) {
+      // Guardar resultados para las tabs 360
+      window._tryonResultados = results;
+      tabs += `<button onclick="cambiarVista360('perfil',this)" style="${tabStyle}${tabOff}">👤 Perfil</button>
+        <button onclick="cambiarVista360('espalda',this)" style="${tabStyle}${tabOff}">🔄 Espalda</button>`;
+    }
+
+    document.getElementById('vistas-tabs').innerHTML = tabs;
 
   } catch(err) {
     clearInterval(iv);
@@ -1745,457 +1690,25 @@ async function ejecutarTryOn(prendaId) {
   }
 }
 
-// ── MOSTRAR RESULTADO (compartido por try-on individual y conjunto) ──────────
-function _mostrarResultadoTryOn(results, tiene360, bgRemoved) {
-  document.getElementById('tryon-load').style.display = 'none';
-  document.getElementById('tryon-res').style.display = 'block';
-  window._tryonResultados = results;
-  window._vistaActual = 'frente';
-
-  const imgEl = document.getElementById('tryon-img');
-  imgEl.src = results.front;
-  imgEl.style.transform = 'scale(1)';
-  imgEl.style.transformOrigin = 'top center';
-  document.getElementById('tryon-dl').href = results.front;
-  document.getElementById('reaccion-resp').style.display = 'none';
-  pararRotacion(); // reset any rotation
-
-  const bgBadge = document.getElementById('bg-removed-badge');
-  if (bgBadge) bgBadge.style.display = bgRemoved ? 'flex' : 'none';
-
-  const ts = 'padding:6px 12px;border:none;border-radius:2px;font-size:11px;font-weight:500;cursor:pointer;font-family:var(--sans);letter-spacing:.4px;white-space:nowrap;flex-shrink:0';
-  const tOn = 'background:var(--ink);color:var(--white);';
-  const tOff = 'background:var(--ash);color:var(--ink);border:1px solid var(--ashDD);';
-
-  let tabs = `
-    <button onclick="zoomVista2('full',this)" style="${ts}${tOn}">🖼 Completo</button>
-    <button onclick="zoomVista2('cara',this)" style="${ts}${tOff}">👤 Cara</button>
-    <button onclick="zoomVista2('torso',this)" style="${ts}${tOff}">👕 Torso</button>
-    <button onclick="zoomVista2('pies',this)" style="${ts}${tOff}">👟 Pies</button>`;
-
-  if (tiene360) {
-    tabs += `
-    <button onclick="cambiarVista360('perfil',this)" style="${ts}${tOff}">↔ Perfil</button>
-    <button onclick="cambiarVista360('espalda',this)" style="${ts}${tOff}">🔄 Espalda</button>`;
-  }
-
-  // Control de rotación automática (solo si hay 360°)
-  if (tiene360) {
-    tabs += `
-    <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;
-      background:linear-gradient(135deg,#8B0000,#1a0000);
-      border:1px solid rgba(201,168,76,.4);border-radius:2px;padding:3px 6px;cursor:pointer"
-      onclick="iniciarRotacion('normal',null)" title="Abrir espejo 360° alfombra roja">
-      <span style="font-size:11px">✨</span>
-      <span style="font-size:10px;font-weight:600;color:var(--gold);letter-spacing:.5px;font-family:var(--sans)">360°</span>
-    </div>`;
-  }
-  }
-
-  document.getElementById('vistas-tabs').innerHTML = tabs;
-}
-
-// ══ RED CARPET 360° — ESPECTÁCULO ALFOMBRA ROJA ══════════════════════════════
-let _rcInterval   = null;   // interval principal de rotación
-let _rcFlash      = null;   // interval de flashes de cámara
-let _rcAngle      = 0;      // ángulo virtual continuo 0-360
-let _rcSpeed      = 0;      // grados por tick
-let _rcCanvas     = null;   // canvas 3D de partículas
-let _rcCtx        = null;
-let _rcStars      = [];     // partículas brillantes
-let _rcAnimId     = null;   // requestAnimationFrame
-
-const _RC_SPEEDS = { lento: 0.4, normal: 0.9, rapido: 2.0 };
-
-// Las 3 imágenes reales se sirven desde ángulos: 0=frente, 90=perfil, 180=espalda, 270=perfil
-function _rcAnguloAImagen(ang, results) {
-  const a = ((ang % 360) + 360) % 360;
-  if (a < 45 || a >= 315)  return { src: results.front,   zona: 'Frente' };
-  if (a < 135)              return { src: results.perfil,  zona: 'Perfil →' };
-  if (a < 225)              return { src: results.espalda, zona: 'Espalda' };
-  return                           { src: results.perfil,  zona: '← Perfil' };
-}
-
-function iniciarRotacion(velocidad, btn) {
-  pararRotacion();
-  const results = window._tryonResultados;
-  if (!results || !results.perfil || !results.espalda) return;
-
-  _rcSpeed = _RC_SPEEDS[velocidad] || 0.9;
-
-  // Activar botón
-  document.querySelectorAll('[data-rcbtn]').forEach(b => {
-    b.style.background = 'transparent'; b.style.color = 'rgba(255,255,255,.45)';
-    b.style.boxShadow = 'none';
-  });
-  if (btn) {
-    btn.style.background = 'var(--gold)';
-    btn.style.color = 'var(--ink)';
-    btn.style.boxShadow = '0 0 12px rgba(201,168,76,.5)';
-  }
-
-  // Abrir el espejo alfombra roja
-  _abrirEspejoRC(results, velocidad);
-}
-
-function pararRotacion() {
-  if (_rcInterval) { clearInterval(_rcInterval); _rcInterval = null; }
-  if (_rcFlash)    { clearInterval(_rcFlash);    _rcFlash    = null; }
-  if (_rcAnimId)   { cancelAnimationFrame(_rcAnimId); _rcAnimId = null; }
-  document.querySelectorAll('[data-rcbtn]').forEach(b => {
-    b.style.background = 'transparent'; b.style.color = 'rgba(255,255,255,.45)';
-    b.style.boxShadow = 'none';
-  });
-  // Si el modal RC está abierto, cerrarlo
-  const modal = document.getElementById('rc-modal');
-  if (modal) modal.remove();
-}
-
-function _abrirEspejoRC(results, velocidad) {
-  // Crear modal fullscreen
-  const modal = document.createElement('div');
-  modal.id = 'rc-modal';
-  modal.style.cssText = `
-    position:fixed;inset:0;z-index:9999;
-    background:#000;
-    display:flex;flex-direction:column;
-    align-items:center;justify-content:flex-start;
-    overflow:hidden;
-  `;
-
-  modal.innerHTML = `
-    <!-- Fondo partículas -->
-    <canvas id="rc-canvas" style="position:absolute;inset:0;pointer-events:none;z-index:1"></canvas>
-
-    <!-- Alfombra roja inferior -->
-    <div style="position:absolute;bottom:0;left:0;right:0;height:22%;
-      background:linear-gradient(180deg,transparent 0%,#8B0000 35%,#6B0000 100%);
-      z-index:2;pointer-events:none">
-      <div style="position:absolute;top:0;left:0;right:0;height:3px;
-        background:linear-gradient(90deg,transparent,#C9A84C,#fff,#C9A84C,transparent);
-        opacity:.6;animation:rcShine 2.5s linear infinite"></div>
-    </div>
-
-    <!-- Focos laterales -->
-    <div id="rc-spot-l" style="position:absolute;top:0;left:0;width:120px;height:60%;
-      background:radial-gradient(ellipse at 0% 0%,rgba(255,255,220,.18) 0%,transparent 70%);
-      z-index:2;pointer-events:none;transform-origin:top left;animation:rcSpotL 3s ease-in-out infinite alternate"></div>
-    <div id="rc-spot-r" style="position:absolute;top:0;right:0;width:120px;height:60%;
-      background:radial-gradient(ellipse at 100% 0%,rgba(255,255,220,.18) 0%,transparent 70%);
-      z-index:2;pointer-events:none;transform-origin:top right;animation:rcSpotR 3.4s ease-in-out infinite alternate"></div>
-
-    <!-- Flash de cámara -->
-    <div id="rc-flash" style="position:absolute;inset:0;background:#fff;opacity:0;z-index:3;pointer-events:none;transition:opacity .06s"></div>
-
-    <!-- Imagen principal -->
-    <div style="position:relative;z-index:4;width:100%;max-width:420px;
-      margin-top:auto;display:flex;flex-direction:column;align-items:center;
-      padding:0 0 20% 0">
-
-      <!-- Nombre zona / ángulo -->
-      <div id="rc-zona" style="font-family:'Cormorant Garamond',serif;
-        font-size:11px;font-weight:300;color:rgba(201,168,76,.7);
-        letter-spacing:4px;text-transform:uppercase;margin-bottom:6px;
-        text-align:center;min-height:16px;transition:opacity .3s"></div>
-
-      <!-- Marco espectacular -->
-      <div id="rc-frame" style="
-        position:relative;
-        width:100%;
-        border-radius:4px;
-        overflow:hidden;
-        box-shadow:
-          0 0 0 1px rgba(201,168,76,.3),
-          0 0 30px rgba(201,168,76,.2),
-          0 0 80px rgba(0,0,0,.8),
-          inset 0 0 60px rgba(0,0,0,.4);
-        transform-style:preserve-3d;
-        transition:transform .55s cubic-bezier(.4,0,.2,1);
-      ">
-        <!-- Overlay de luz deslizante -->
-        <div id="rc-light" style="position:absolute;top:0;left:-100%;width:60%;height:100%;
-          background:linear-gradient(105deg,transparent 0%,rgba(255,255,255,.07) 50%,transparent 100%);
-          pointer-events:none;z-index:10;transition:left .6s ease-in-out"></div>
-
-        <img id="rc-img" style="width:100%;display:block;
-          transition:transform .55s cubic-bezier(.4,0,.2,1),opacity .25s;
-          transform-origin:center center">
-      </div>
-
-      <!-- Barra de ángulo -->
-      <div style="display:flex;align-items:center;gap:8px;margin-top:10px;width:100%;padding:0 16px">
-        <div style="flex:1;height:2px;background:rgba(255,255,255,.08);border-radius:1px;position:relative;overflow:hidden">
-          <div id="rc-progress" style="height:100%;background:linear-gradient(90deg,#C9A84C,#F5EDD6);
-            border-radius:1px;width:0%;transition:width .1s linear;box-shadow:0 0 6px rgba(201,168,76,.6)"></div>
-        </div>
-        <div id="rc-deg" style="font-size:9px;color:rgba(201,168,76,.5);letter-spacing:1px;min-width:32px;text-align:right">0°</div>
-      </div>
-
-      <!-- Nombre outfit -->
-      <div style="font-family:'Cormorant Garamond',serif;font-size:13px;font-weight:300;
-        color:rgba(255,255,255,.3);letter-spacing:2px;margin-top:6px;text-align:center;
-        font-style:italic" id="rc-outfit-name"></div>
-    </div>
-
-    <!-- Controles -->
-    <div style="position:absolute;bottom:0;left:0;right:0;z-index:5;
-      background:linear-gradient(transparent,rgba(0,0,0,.95));
-      padding:10px 16px 28px;display:flex;flex-direction:column;gap:8px;align-items:center">
-
-      <!-- Velocidad -->
-      <div style="display:flex;gap:6px;align-items:center">
-        <button data-rcbtn onclick="cambiarVelocidadRC('lento',this)"
-          style="padding:7px 16px;background:transparent;border:1px solid rgba(255,255,255,.15);
-          border-radius:2px;color:rgba(255,255,255,.45);font-size:11px;font-weight:500;
-          cursor:pointer;font-family:var(--sans);letter-spacing:.5px;transition:all .2s">
-          🐢 Lento
-        </button>
-        <button data-rcbtn onclick="cambiarVelocidadRC('normal',this)"
-          style="padding:7px 16px;background:var(--gold);border:none;border-radius:2px;
-          color:var(--ink);font-size:11px;font-weight:600;cursor:pointer;font-family:var(--sans);
-          letter-spacing:.5px;box-shadow:0 0 12px rgba(201,168,76,.5);transition:all .2s">
-          ▶ Normal
-        </button>
-        <button data-rcbtn onclick="cambiarVelocidadRC('rapido',this)"
-          style="padding:7px 16px;background:transparent;border:1px solid rgba(255,255,255,.15);
-          border-radius:2px;color:rgba(255,255,255,.45);font-size:11px;font-weight:500;
-          cursor:pointer;font-family:var(--sans);letter-spacing:.5px;transition:all .2s">
-          ⚡ Rápido
-        </button>
-        <button onclick="pararRotacion()"
-          style="padding:7px 12px;background:transparent;border:1px solid rgba(192,82,74,.4);
-          border-radius:2px;color:rgba(192,82,74,.7);font-size:11px;cursor:pointer;
-          font-family:var(--sans);letter-spacing:.5px;transition:all .2s"
-          onmouseover="this.style.background='rgba(192,82,74,.15)'" onmouseout="this.style.background='transparent'">
-          ⏹ Cerrar
-        </button>
-      </div>
-
-      <!-- Paparazzi toggle -->
-      <div style="display:flex;align-items:center;gap:8px">
-        <button onclick="togglePaparazzi(this)"
-          id="rc-pap-btn"
-          style="display:flex;align-items:center;gap:6px;padding:5px 14px;
-          background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);
-          border-radius:2px;color:rgba(255,255,255,.4);font-size:10px;cursor:pointer;
-          font-family:var(--sans);letter-spacing:.5px;transition:all .25s">
-          📸 Flash paparazzi: OFF
-        </button>
-        <a id="rc-dl"
-          style="display:flex;align-items:center;gap:5px;padding:5px 14px;
-          background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.25);
-          border-radius:2px;color:rgba(201,168,76,.7);font-size:10px;cursor:pointer;
-          font-family:var(--sans);letter-spacing:.5px;text-decoration:none"
-          download="fitme_redcarpet.png">
-          ⬇ Guardar
-        </a>
-      </div>
-    </div>
-
-    <style>
-      @keyframes rcShine { from{background-position:-200px 0} to{background-position:200px 0} }
-      @keyframes rcSpotL { from{transform:rotate(-8deg) scaleX(.8)} to{transform:rotate(5deg) scaleX(1)} }
-      @keyframes rcSpotR { from{transform:rotate(8deg) scaleX(.8)} to{transform:rotate(-5deg) scaleX(1)} }
-      @keyframes rcStar  { 0%{opacity:0;transform:scale(0) rotate(0deg)} 50%{opacity:1} 100%{opacity:0;transform:scale(1.5) rotate(180deg)} }
-      #rc-img { image-rendering:auto }
-    </style>
-  `;
-  document.body.appendChild(modal);
-
-  // Poblar imagen inicial y nombre
-  const rcImg = document.getElementById('rc-img');
-  const rcDl  = document.getElementById('rc-dl');
-  rcImg.src = results.front;
-  rcDl.href = results.front;
-  document.getElementById('rc-outfit-name').textContent = window._tryonPrendaNombre || '';
-
-  // Canvas partículas
-  _rcCanvas = document.getElementById('rc-canvas');
-  _rcCtx    = _rcCanvas.getContext('2d');
-  _rcCanvas.width  = window.innerWidth;
-  _rcCanvas.height = window.innerHeight;
-  _rcStars = Array.from({length:60}, () => _nuevoStar());
-  _loopParticulas();
-
-  // Arrancar rotación
-  _rcAngle = 0;
-  _iniciarLoopRC(results, velocidad);
-}
-
-function _nuevoStar() {
-  return {
-    x: Math.random() * (window.innerWidth || 400),
-    y: Math.random() * (window.innerHeight || 800),
-    r: Math.random() * 2.5 + 0.5,
-    a: Math.random(),
-    va: (Math.random() - 0.5) * 0.02,
-    vx: (Math.random() - 0.5) * 0.3,
-    vy: -Math.random() * 0.8 - 0.2,
-    color: Math.random() < 0.6 ? '#C9A84C' : '#fff',
-  };
-}
-
-function _loopParticulas() {
-  if (!_rcCtx) return;
-  const W = _rcCanvas.width, H = _rcCanvas.height;
-  _rcCtx.clearRect(0, 0, W, H);
-  for (const s of _rcStars) {
-    s.a += s.va;
-    if (s.a <= 0) s.va = Math.abs(s.va);
-    if (s.a >= 1) s.va = -Math.abs(s.va);
-    s.x += s.vx; s.y += s.vy;
-    if (s.y < -10) { s.y = H + 5; s.x = Math.random() * W; }
-    if (s.x < -10 || s.x > W + 10) s.x = Math.random() * W;
-    _rcCtx.save();
-    _rcCtx.globalAlpha = Math.max(0, Math.min(1, s.a));
-    _rcCtx.fillStyle = s.color;
-    _rcCtx.shadowColor = s.color;
-    _rcCtx.shadowBlur = 8;
-    _rcCtx.beginPath();
-    _rcCtx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-    _rcCtx.fill();
-    _rcCtx.restore();
-  }
-  _rcAnimId = requestAnimationFrame(_loopParticulas);
-}
-
-let _rcPrevSrc = '';
-let _rcPaparazzi = false;
-
-function _iniciarLoopRC(results, velocidad) {
-  if (_rcInterval) clearInterval(_rcInterval);
-  _rcSpeed = _RC_SPEEDS[velocidad] || 0.9;
-
-  _rcInterval = setInterval(() => {
-    _rcAngle = (_rcAngle + _rcSpeed) % 360;
-    const { src, zona } = _rcAnguloAImagen(_rcAngle, results);
-    const progress = _rcAngle / 360 * 100;
-
-    // Barra y grados
-    const bar = document.getElementById('rc-progress');
-    const deg = document.getElementById('rc-deg');
-    if (bar) bar.style.width = progress + '%';
-    if (deg) deg.textContent = Math.round(_rcAngle) + '°';
-
-    // Cambio de imagen con efecto 3D al cruzar cuadrante
-    if (src !== _rcPrevSrc) {
-      _rcPrevSrc = src;
-      const imgEl = document.getElementById('rc-img');
-      const frame = document.getElementById('rc-frame');
-      const light = document.getElementById('rc-light');
-      const zona_el = document.getElementById('rc-zona');
-      const dl = document.getElementById('rc-dl');
-      if (!imgEl) return;
-
-      // Determinar dirección del giro
-      const rotY = _rcSpeed >= 0 ? 'rotateY(25deg)' : 'rotateY(-25deg)';
-
-      // Fase 1: girar hacia afuera
-      imgEl.style.opacity = '0.1';
-      frame.style.transform = rotY;
-
-      setTimeout(() => {
-        imgEl.src = src;
-        if (dl) dl.href = src;
-        if (zona_el) { zona_el.style.opacity='0'; setTimeout(()=>{ zona_el.textContent=zona; zona_el.style.opacity='1'; }, 150); }
-        // Luz deslizante
-        if (light) { light.style.left = '-100%'; setTimeout(()=>{ light.style.left='140%'; }, 50); }
-        // Fase 2: girar de vuelta
-        frame.style.transform = 'rotateY(0deg)';
-        imgEl.style.opacity = '1';
-      }, 200);
-
-      // Flash paparazzi aleatorio
-      if (_rcPaparazzi && Math.random() < 0.65) {
-        const f = document.getElementById('rc-flash');
-        if (f) { f.style.opacity='0.55'; setTimeout(()=>f.style.opacity='0', 80); }
-        // Segundo flash rápido
-        if (Math.random() < 0.4) setTimeout(()=>{ if(f){f.style.opacity='0.3'; setTimeout(()=>f.style.opacity='0',50);} }, 160);
-      }
-    }
-  }, 16); // ~60fps
-}
-
-function cambiarVelocidadRC(velocidad, btn) {
-  _rcSpeed = _RC_SPEEDS[velocidad] || 0.9;
-  document.querySelectorAll('[data-rcbtn]').forEach(b => {
-    b.style.background = 'transparent';
-    b.style.color = 'rgba(255,255,255,.45)';
-    b.style.border = '1px solid rgba(255,255,255,.15)';
-    b.style.boxShadow = 'none';
-    b.style.fontWeight = '500';
-  });
-  if (btn) {
-    btn.style.background = 'var(--gold)';
-    btn.style.color = 'var(--ink)';
-    btn.style.border = 'none';
-    btn.style.boxShadow = '0 0 12px rgba(201,168,76,.5)';
-    btn.style.fontWeight = '600';
-  }
-}
-
-function togglePaparazzi(btn) {
-  _rcPaparazzi = !_rcPaparazzi;
-  btn.textContent = '📸 Flash paparazzi: ' + (_rcPaparazzi ? 'ON' : 'OFF');
-  btn.style.background  = _rcPaparazzi ? 'rgba(201,168,76,.2)'  : 'rgba(255,255,255,.06)';
-  btn.style.borderColor = _rcPaparazzi ? 'rgba(201,168,76,.5)'  : 'rgba(255,255,255,.1)';
-  btn.style.color       = _rcPaparazzi ? 'var(--gold)'          : 'rgba(255,255,255,.4)';
-}
-
-// ── Vista activa actual (para saber qué imagen usar al hacer zoom) ──
-window._vistaActual = 'frente'; // 'frente' | 'perfil' | 'espalda'
-
-function _tabActivar(btn) {
-  document.querySelectorAll('#vistas-tabs button').forEach(b => {
-    b.style.background = 'var(--ash)';
-    b.style.color = 'var(--ink)';
-    b.style.border = '1px solid var(--ashDD)';
-  });
-  if (btn) { btn.style.background = 'var(--ink)'; btn.style.color = 'var(--white)'; btn.style.border = 'none'; }
-}
-
 function cambiarVista360(vista, btn) {
   const results = window._tryonResultados;
   if (!results) return;
   const imgEl = document.getElementById('tryon-img');
-  // Detener rotación si está activa
-  pararRotacion();
   imgEl.style.transform = 'scale(1)';
-  imgEl.style.transformOrigin = 'top center';
-  window._vistaActual = vista;
   if (vista === 'perfil' && results.perfil) imgEl.src = results.perfil;
   if (vista === 'espalda' && results.espalda) imgEl.src = results.espalda;
   document.getElementById('tryon-dl').href = imgEl.src;
-  _tabActivar(btn);
+  document.querySelectorAll('#vistas-tabs button').forEach(b=>{b.style.background='var(--ash)';b.style.color='var(--ink)';b.style.border='1px solid var(--ashDD)';});
+  if(btn){btn.style.background='var(--ink)';btn.style.color='var(--white)';btn.style.border='none';}
 }
 
-function zoomVista2(zona, btn) {
-  const imgEl = document.getElementById('tryon-img');
-  const results = window._tryonResultados;
-  // Detener rotación si está activa
-  pararRotacion();
-  // Si es "full" volver a la imagen frontal (o la que corresponda si estamos en zoom)
-  if (zona === 'full') {
-    imgEl.style.transform = 'scale(1)';
-    imgEl.style.transformOrigin = 'top center';
-    // Restaurar imagen frontal siempre que hagamos "Completo"
-    if (results && results.front) {
-      imgEl.src = results.front;
-      document.getElementById('tryon-dl').href = results.front;
-    }
-    window._vistaActual = 'frente';
-    _tabActivar(btn);
-    return;
-  }
-  const configs = {
-    cara:  { transform:'scale(2.4)', origin:'50% 8%' },
-    torso: { transform:'scale(1.9)', origin:'50% 35%' },
-    pies:  { transform:'scale(2.2)', origin:'50% 92%' }
-  };
-  const cfg = configs[zona] || { transform:'scale(1)', origin:'top center' };
-  imgEl.style.transformOrigin = cfg.origin;
-  imgEl.style.transform = cfg.transform;
-  _tabActivar(btn);
+function zoomVista2(zona,btn){
+  const img=document.getElementById('tryon-img');
+  const configs={full:{transform:'scale(1)',origin:'top center'},cara:{transform:'scale(2.4)',origin:'15% top'},torso:{transform:'scale(1.9)',origin:'center 35%'},pies:{transform:'scale(2.2)',origin:'center bottom'}};
+  const cfg=configs[zona]||configs.full;
+  img.style.transformOrigin=cfg.origin;img.style.transform=cfg.transform;
+  document.querySelectorAll('#vistas-tabs button').forEach(b=>{b.style.background='var(--ash)';b.style.color='var(--ink)';b.style.border='1px solid var(--ashDD)';});
+  if(btn){btn.style.background='var(--ink)';btn.style.color='var(--white)';btn.style.border='none';}
 }
 
 async function reaccionTryOn(tipo){
