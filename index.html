@@ -643,7 +643,7 @@ svg{display:block;}
       </div>
       <div id="tryon-res" style="display:none">
         <div style="font-size:10px;font-weight:500;color:var(--fog);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Tu espejo virtual</div>
-        <div id="vistas-tabs" style="display:flex;gap:6px;margin-bottom:10px;overflow-x:auto;scrollbar-width:none"></div>
+        <div id="vistas-tabs" style="display:flex;gap:5px;margin-bottom:10px;overflow-x:auto;scrollbar-width:none;flex-wrap:nowrap;align-items:center;padding-bottom:2px"></div>
         <div style="border-radius:var(--r3);overflow:hidden;box-shadow:var(--shadow-lg);position:relative">
           <img id="tryon-img" style="width:100%;display:block;transition:transform .4s ease" alt="Resultado Try-On">
         </div>
@@ -1545,7 +1545,7 @@ function setGAB(tipo, texto) {
 }
 
 // ══ TRY-ON (ACTUALIZADO CON ANÁLISIS DE PRENDA) ════════════════════════════
-function resetTryOn(){document.getElementById('tryon-res').style.display='none';document.getElementById('tryon-err').style.display='none';document.getElementById('tryon-analisis').style.display='none';document.getElementById('tryon-sel').style.display='block';document.getElementById('reaccion-resp').style.display='none';const b=document.getElementById('bg-removed-badge');if(b)b.style.display='none';}
+function resetTryOn(){pararRotacion();document.getElementById('tryon-res').style.display='none';document.getElementById('tryon-err').style.display='none';document.getElementById('tryon-analisis').style.display='none';document.getElementById('tryon-sel').style.display='block';document.getElementById('reaccion-resp').style.display='none';const b=document.getElementById('bg-removed-badge');if(b)b.style.display='none';}
 
 function iniciarTryOn(){
   const prendas=Object.values(outfit).filter(Boolean);
@@ -1558,12 +1558,97 @@ function iniciarTryOn(){
   document.getElementById('tryon-analisis').style.display='none';
   document.getElementById('tryon-sel').style.display='block';
   const tl={top:'Top / Polera',pants:'Pantalón',shoes:'Calzado',jacket:'Chaqueta',acc:'Accesorio'};
-  document.getElementById('tryon-btns').innerHTML=prendas.map(p=>`
-    <button onclick="ejecutarTryOn(${p.id})" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--ashDD);border-radius:var(--r2);background:var(--white);cursor:pointer;text-align:left;width:100%;font-family:var(--sans);transition:border-color .2s" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--ashDD)'">
+  const prendasRopa = prendas.filter(p=>p.tipo!=='acc');
+  let html = '';
+  if (prendasRopa.length > 1) {
+    html += `<button onclick="ejecutarTryOnConjunto()" style="display:flex;align-items:center;gap:12px;padding:13px 14px;border:2px solid var(--gold);border-radius:var(--r2);background:var(--goldL);cursor:pointer;text-align:left;width:100%;font-family:var(--sans);margin-bottom:8px">
+      <span style="font-size:22px">✨</span>
+      <div style="flex:1"><div style="font-size:13px;font-weight:600;color:var(--goldD)">Probar conjunto completo</div><div style="font-size:10.5px;color:var(--goldD);opacity:.7;margin-top:2px">Aplica ${prendasRopa.length} prendas en secuencia • sin mezclar diseños</div></div>
+      <span style="font-size:16px;color:var(--goldD)">→</span>
+    </button>`;
+  }
+  html += prendas.map(p=>`
+    <button onclick="ejecutarTryOn(${p.id})" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--ashDD);border-radius:var(--r2);background:var(--white);cursor:pointer;text-align:left;width:100%;font-family:var(--sans);transition:border-color .2s;margin-bottom:4px" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--ashDD)'">
       <img src="${p.img}" style="width:44px;height:44px;border-radius:var(--r);object-fit:cover;flex-shrink:0" onerror="this.style.display='none'">
-      <div style="flex:1"><div style="font-size:12.5px;font-weight:500">${p.nombre}</div><div style="font-size:10.5px;color:var(--fog);margin-top:2px">${tl[p.tipo]||p.tipo}</div></div>
+      <div style="flex:1"><div style="font-size:12.5px;font-weight:500">${p.nombre}</div><div style="font-size:10.5px;color:var(--fog);margin-top:2px">${tl[p.tipo]||p.tipo} · individual</div></div>
       <span style="font-size:16px;color:var(--fog)">→</span>
     </button>`).join('');
+  document.getElementById('tryon-btns').innerHTML=html;
+}
+
+// ── TRY-ON CONJUNTO: aplica prendas en secuencia, zona correcta para cada una ──
+const _TRYON_ORDEN = ['top','jacket','pants','shoes']; // acc nunca contamina torso
+const _TRYON_CAT = { top:'tops', jacket:'tops', pants:'bottoms', shoes:'shoes', acc:'auto' };
+
+async function _aplicarSecuencial(imgBase, listaPrendas) {
+  let img = imgBase;
+  for (const { prenda, b64, analisis } of listaPrendas) {
+    const payload = {
+      human_img: img,
+      garm_img: b64,
+      garment_des: prenda.nombre,
+      category: _TRYON_CAT[prenda.tipo] || 'auto',
+      needs_bg_removal: analisis.needsBgRemoval
+    };
+    const r = await fetch('/api/tryon', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+    const d = await r.json();
+    if (d.output) img = d.output;
+  }
+  return img;
+}
+
+async function ejecutarTryOnConjunto() {
+  const prendasOrdenadas = _TRYON_ORDEN.map(t => outfit[t]).filter(Boolean);
+  if (prendasOrdenadas.length === 0 || !window._foto) return;
+  window._tryonPrendaNombre = 'conjunto (' + prendasOrdenadas.map(p=>p.nombre.split(' ')[0]).join(', ') + ')';
+  const modo360 = !!(window._foto && window._fotoPerfil && window._fotoEspalda);
+
+  document.getElementById('tryon-sel').style.display = 'none';
+  document.getElementById('tryon-analisis').style.display = 'block';
+  document.getElementById('tryon-load').style.display = 'none';
+  document.getElementById('tryon-res').style.display = 'none';
+  document.getElementById('tryon-err').style.display = 'none';
+  setGAB('proc', `🔍 Analizando ${prendasOrdenadas.length} prendas del conjunto...`);
+
+  const lista = [];
+  for (const p of prendasOrdenadas) {
+    const b64 = await imgToBase64Url(p.img);
+    const a = await analizarPrenda(b64);
+    lista.push({ prenda: p, b64, analisis: a });
+  }
+  setGAB('ok', `✓ ${prendasOrdenadas.length} prendas listas • aplicando sin mezclar zonas`);
+  await delay(600);
+
+  document.getElementById('tryon-analisis').style.display = 'none';
+  document.getElementById('tryon-load').style.display = 'block';
+  const bar = document.getElementById('tryon-bar');
+  bar.style.width = '5%';
+  let prog = 5;
+  const iv = setInterval(()=>{ if(prog<85){prog+=0.3;bar.style.width=prog+'%';} },300);
+
+  try {
+    document.getElementById('tryon-msg').textContent = `Aplicando conjunto (${prendasOrdenadas.length} prendas en secuencia)...`;
+    document.getElementById('tryon-submsg').textContent = 'Cada prenda se aplica en su zona • sin contaminar otras áreas';
+    const resultFront = await _aplicarSecuencial(window._foto, lista);
+    let resultPerfil = null, resultEspalda = null;
+    if (modo360) {
+      document.getElementById('tryon-msg').textContent = 'Procesando vista de perfil...';
+      resultPerfil = await _aplicarSecuencial(window._fotoPerfil, lista);
+      document.getElementById('tryon-msg').textContent = 'Procesando vista de espalda...';
+      resultEspalda = await _aplicarSecuencial(window._fotoEspalda, lista);
+    }
+    clearInterval(iv); bar.style.width = '100%';
+    await delay(200);
+    _mostrarResultadoTryOn({ front: resultFront, perfil: resultPerfil, espalda: resultEspalda }, modo360 && resultPerfil && resultEspalda, false);
+  } catch(err) {
+    clearInterval(iv);
+    document.getElementById('tryon-load').style.display='none';
+    document.getElementById('tryon-sel').style.display='block';
+    const el=document.getElementById('tryon-err'); el.style.display='block';
+    el.innerHTML = err.message.includes('402')
+      ? 'Sin créditos en FASHN.ai. <a href="https://app.fashn.ai" target="_blank" style="color:var(--rose)">app.fashn.ai →</a>'
+      : 'Error: ' + err.message;
+  }
 }
 
 async function imgToBase64Url(src){
@@ -1621,7 +1706,7 @@ async function ejecutarTryOn(prendaId) {
   }, modo360 ? 800 : 500);
 
   try {
-    const catMap = { top: 'tops', pants: 'bottoms', jacket: 'tops', shoes: 'auto', acc: 'auto' };
+    const catMap = { top: 'tops', pants: 'bottoms', jacket: 'tops', shoes: 'shoes', acc: 'auto' };
     const basePayload = { garm_img: prendaB64, garment_des: prenda.nombre, category: catMap[prenda.tipo] || 'auto', needs_bg_removal: analisis.needsBgRemoval };
 
     let results;
@@ -1644,37 +1729,7 @@ async function ejecutarTryOn(prendaId) {
 
     clearInterval(iv); bar.style.width = '100%';
     await delay(300);
-
-    document.getElementById('tryon-load').style.display = 'none';
-    document.getElementById('tryon-res').style.display = 'block';
-
-    // Mostrar resultado frontal por defecto
-    const imgEl = document.getElementById('tryon-img');
-    imgEl.src = results.front; imgEl.style.transform = 'scale(1)';
-    document.getElementById('tryon-dl').href = results.front;
-    document.getElementById('reaccion-resp').style.display = 'none';
-
-    const bgBadge = document.getElementById('bg-removed-badge');
-    if (bgBadge) bgBadge.style.display = analisis.needsBgRemoval ? 'flex' : 'none';
-
-    // Tabs según modo
-    const tabStyle = 'padding:6px 14px;border:none;border-radius:2px;font-size:11px;font-weight:500;cursor:pointer;font-family:var(--sans);letter-spacing:.4px;white-space:nowrap';
-    const tabOn = `background:var(--ink);color:var(--white);`;
-    const tabOff = `background:var(--ash);color:var(--ink);border:1px solid var(--ashDD);`;
-
-    let tabs = `<button onclick="zoomVista2('full',this)" style="${tabStyle}${tabOn}">Completo</button>
-      <button onclick="zoomVista2('cara',this)" style="${tabStyle}${tabOff}">Cara</button>
-      <button onclick="zoomVista2('torso',this)" style="${tabStyle}${tabOff}">Torso</button>
-      <button onclick="zoomVista2('pies',this)" style="${tabStyle}${tabOff}">Calzado</button>`;
-
-    if (modo360 && results.perfil && results.espalda) {
-      // Guardar resultados para las tabs 360
-      window._tryonResultados = results;
-      tabs += `<button onclick="cambiarVista360('perfil',this)" style="${tabStyle}${tabOff}">👤 Perfil</button>
-        <button onclick="cambiarVista360('espalda',this)" style="${tabStyle}${tabOff}">🔄 Espalda</button>`;
-    }
-
-    document.getElementById('vistas-tabs').innerHTML = tabs;
+    _mostrarResultadoTryOn(results, modo360 && results.perfil && results.espalda, analisis.needsBgRemoval);
 
   } catch(err) {
     clearInterval(iv);
@@ -1690,25 +1745,165 @@ async function ejecutarTryOn(prendaId) {
   }
 }
 
+// ── MOSTRAR RESULTADO (compartido por try-on individual y conjunto) ──────────
+function _mostrarResultadoTryOn(results, tiene360, bgRemoved) {
+  document.getElementById('tryon-load').style.display = 'none';
+  document.getElementById('tryon-res').style.display = 'block';
+  window._tryonResultados = results;
+  window._vistaActual = 'frente';
+
+  const imgEl = document.getElementById('tryon-img');
+  imgEl.src = results.front;
+  imgEl.style.transform = 'scale(1)';
+  imgEl.style.transformOrigin = 'top center';
+  document.getElementById('tryon-dl').href = results.front;
+  document.getElementById('reaccion-resp').style.display = 'none';
+  pararRotacion(); // reset any rotation
+
+  const bgBadge = document.getElementById('bg-removed-badge');
+  if (bgBadge) bgBadge.style.display = bgRemoved ? 'flex' : 'none';
+
+  const ts = 'padding:6px 12px;border:none;border-radius:2px;font-size:11px;font-weight:500;cursor:pointer;font-family:var(--sans);letter-spacing:.4px;white-space:nowrap;flex-shrink:0';
+  const tOn = 'background:var(--ink);color:var(--white);';
+  const tOff = 'background:var(--ash);color:var(--ink);border:1px solid var(--ashDD);';
+
+  let tabs = `
+    <button onclick="zoomVista2('full',this)" style="${ts}${tOn}">🖼 Completo</button>
+    <button onclick="zoomVista2('cara',this)" style="${ts}${tOff}">👤 Cara</button>
+    <button onclick="zoomVista2('torso',this)" style="${ts}${tOff}">👕 Torso</button>
+    <button onclick="zoomVista2('pies',this)" style="${ts}${tOff}">👟 Pies</button>`;
+
+  if (tiene360) {
+    tabs += `
+    <button onclick="cambiarVista360('perfil',this)" style="${ts}${tOff}">↔ Perfil</button>
+    <button onclick="cambiarVista360('espalda',this)" style="${ts}${tOff}">🔄 Espalda</button>`;
+  }
+
+  // Control de rotación automática (solo si hay 360°)
+  if (tiene360) {
+    tabs += `
+    <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;background:var(--ash);border:1px solid var(--ashDD);border-radius:2px;padding:2px 4px">
+      <span style="font-size:9px;color:var(--fog);font-weight:500;letter-spacing:.4px;padding:0 4px">AUTO</span>
+      <button onclick="iniciarRotacion('lento',this)" title="Lento" style="padding:4px 8px;border:none;background:transparent;cursor:pointer;font-size:13px;border-radius:2px" onmouseover="this.style.background='var(--ashD)'" onmouseout="this.style.background='transparent'">🐢</button>
+      <button onclick="iniciarRotacion('normal',this)" title="Normal" style="padding:4px 8px;border:none;background:transparent;cursor:pointer;font-size:13px;border-radius:2px" onmouseover="this.style.background='var(--ashD)'" onmouseout="this.style.background='transparent'">▶</button>
+      <button onclick="iniciarRotacion('rapido',this)" title="Rápido" style="padding:4px 8px;border:none;background:transparent;cursor:pointer;font-size:13px;border-radius:2px" onmouseover="this.style.background='var(--ashD)'" onmouseout="this.style.background='transparent'">⚡</button>
+      <button onclick="pararRotacion()" title="Parar" style="padding:4px 8px;border:none;background:transparent;cursor:pointer;font-size:13px;border-radius:2px;color:var(--rose)" onmouseover="this.style.background='var(--ashD)'" onmouseout="this.style.background='transparent'">⏹</button>
+    </div>`;
+  }
+
+  document.getElementById('vistas-tabs').innerHTML = tabs;
+}
+
+// ── ROTACIÓN AUTOMÁTICA 360° ─────────────────────────────────────────────────
+let _rotInterval = null;
+let _rotFrame = 0; // 0=frente, 1=perfil, 2=espalda, 3=perfil (espejo)
+
+const _rotVelocidades = { lento: 3000, normal: 1800, rapido: 900 };
+const _rotVistas = ['frente', 'perfil', 'espalda', 'perfil'];
+
+function iniciarRotacion(velocidad, btn) {
+  pararRotacion();
+  const results = window._tryonResultados;
+  if (!results || !results.perfil || !results.espalda) return;
+  const ms = _rotVelocidades[velocidad] || 1800;
+  _rotFrame = 0;
+
+  // Destacar botón activo
+  document.querySelectorAll('[onclick^="iniciarRotacion"]').forEach(b => {
+    b.style.background = 'transparent';
+    b.style.outline = 'none';
+  });
+  if (btn) { btn.style.background = 'var(--goldL)'; btn.style.outline = '1.5px solid var(--gold)'; }
+
+  const imgEl = document.getElementById('tryon-img');
+  imgEl.style.transform = 'scale(1)';
+  imgEl.style.transformOrigin = 'top center';
+
+  function tick() {
+    _rotFrame = (_rotFrame + 1) % 4;
+    const vista = _rotVistas[_rotFrame];
+    let src;
+    if (vista === 'frente') src = results.front;
+    else if (vista === 'perfil') src = results.perfil;
+    else if (vista === 'espalda') src = results.espalda;
+    if (src) {
+      // Animación de transición suave
+      imgEl.style.opacity = '0.35';
+      imgEl.style.transition = 'opacity 0.22s';
+      setTimeout(() => {
+        imgEl.src = src;
+        imgEl.style.opacity = '1';
+        document.getElementById('tryon-dl').href = src;
+      }, 220);
+    }
+  }
+  _rotInterval = setInterval(tick, ms);
+}
+
+function pararRotacion() {
+  if (_rotInterval) { clearInterval(_rotInterval); _rotInterval = null; }
+  document.querySelectorAll('[onclick^="iniciarRotacion"]').forEach(b => {
+    b.style.background = 'transparent';
+    b.style.outline = 'none';
+  });
+  const imgEl = document.getElementById('tryon-img');
+  if (imgEl) { imgEl.style.opacity = '1'; imgEl.style.transition = 'opacity 0.3s'; }
+}
+
+// ── Vista activa actual (para saber qué imagen usar al hacer zoom) ──
+window._vistaActual = 'frente'; // 'frente' | 'perfil' | 'espalda'
+
+function _tabActivar(btn) {
+  document.querySelectorAll('#vistas-tabs button').forEach(b => {
+    b.style.background = 'var(--ash)';
+    b.style.color = 'var(--ink)';
+    b.style.border = '1px solid var(--ashDD)';
+  });
+  if (btn) { btn.style.background = 'var(--ink)'; btn.style.color = 'var(--white)'; btn.style.border = 'none'; }
+}
+
 function cambiarVista360(vista, btn) {
   const results = window._tryonResultados;
   if (!results) return;
   const imgEl = document.getElementById('tryon-img');
+  // Detener rotación si está activa
+  pararRotacion();
   imgEl.style.transform = 'scale(1)';
+  imgEl.style.transformOrigin = 'top center';
+  window._vistaActual = vista;
   if (vista === 'perfil' && results.perfil) imgEl.src = results.perfil;
   if (vista === 'espalda' && results.espalda) imgEl.src = results.espalda;
   document.getElementById('tryon-dl').href = imgEl.src;
-  document.querySelectorAll('#vistas-tabs button').forEach(b=>{b.style.background='var(--ash)';b.style.color='var(--ink)';b.style.border='1px solid var(--ashDD)';});
-  if(btn){btn.style.background='var(--ink)';btn.style.color='var(--white)';btn.style.border='none';}
+  _tabActivar(btn);
 }
 
-function zoomVista2(zona,btn){
-  const img=document.getElementById('tryon-img');
-  const configs={full:{transform:'scale(1)',origin:'top center'},cara:{transform:'scale(2.4)',origin:'15% top'},torso:{transform:'scale(1.9)',origin:'center 35%'},pies:{transform:'scale(2.2)',origin:'center bottom'}};
-  const cfg=configs[zona]||configs.full;
-  img.style.transformOrigin=cfg.origin;img.style.transform=cfg.transform;
-  document.querySelectorAll('#vistas-tabs button').forEach(b=>{b.style.background='var(--ash)';b.style.color='var(--ink)';b.style.border='1px solid var(--ashDD)';});
-  if(btn){btn.style.background='var(--ink)';btn.style.color='var(--white)';btn.style.border='none';}
+function zoomVista2(zona, btn) {
+  const imgEl = document.getElementById('tryon-img');
+  const results = window._tryonResultados;
+  // Detener rotación si está activa
+  pararRotacion();
+  // Si es "full" volver a la imagen frontal (o la que corresponda si estamos en zoom)
+  if (zona === 'full') {
+    imgEl.style.transform = 'scale(1)';
+    imgEl.style.transformOrigin = 'top center';
+    // Restaurar imagen frontal siempre que hagamos "Completo"
+    if (results && results.front) {
+      imgEl.src = results.front;
+      document.getElementById('tryon-dl').href = results.front;
+    }
+    window._vistaActual = 'frente';
+    _tabActivar(btn);
+    return;
+  }
+  const configs = {
+    cara:  { transform:'scale(2.4)', origin:'50% 8%' },
+    torso: { transform:'scale(1.9)', origin:'50% 35%' },
+    pies:  { transform:'scale(2.2)', origin:'50% 92%' }
+  };
+  const cfg = configs[zona] || { transform:'scale(1)', origin:'top center' };
+  imgEl.style.transformOrigin = cfg.origin;
+  imgEl.style.transform = cfg.transform;
+  _tabActivar(btn);
 }
 
 async function reaccionTryOn(tipo){
