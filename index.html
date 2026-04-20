@@ -747,8 +747,6 @@ function closeModal(id){document.getElementById(id).classList.remove('show');}
 function selOjos(el,color){document.querySelectorAll('[onclick^="selOjos"]').forEach(b=>b.classList.remove('on'));el.classList.add('on');document.getElementById('inp-ojos').value=color;}
 
 
-// ══ LOGIN PUENTE — delega a window.loginEntrar definida en fixes ══
-function loginEntrar(){if(window.loginEntrar)window.loginEntrar();else console.error('loginEntrar no cargada');}
 // ══ NAVEGACIÓN ══
 function goPage(p){document.querySelectorAll('.pg').forEach(x=>x.classList.remove('act'));document.querySelectorAll('.nt').forEach(x=>x.classList.remove('on'));document.getElementById('page-'+p).classList.add('act');document.getElementById('nav-'+p).classList.add('on');if(p==='buscar')filtrarPrendas();if(p==='espejo')updateEspejo();if(p==='outfits')initOutfits();if(p==='inicio')updateHomeCard();if(p==='admin')admRenderGrid();window.scrollTo(0,0);}
 
@@ -1055,7 +1053,7 @@ window.guardarPerfil = function() {
 };
 
 // ── LOGIN: reemplaza completamente la función original ──
-window.loginEntrar = async function() {
+async function loginEntrar() {
   const nombre = (document.getElementById('login-nombre').value || '').trim();
   if (!nombre || nombre.length < 2) { mostrarLoginError('Escribe tu nombre (mínimo 2 caracteres)'); return; }
 
